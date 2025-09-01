@@ -20,6 +20,7 @@ exports.addLead = async (req, res) => {
         timeline
     } = req.body;
 
+    console.log(req.body);
     try {
         const { data, error } = await supabase
             .from('leads')

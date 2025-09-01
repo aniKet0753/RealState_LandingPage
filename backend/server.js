@@ -1,12 +1,12 @@
 const express = require('express');
 const agentRoutes = require('./routes/agentRoutes');
 const leadRoutes = require('./routes/leadRoutes');
-
+const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 5002;
 
 app.use(express.json());
-
+app.use(cors());
 // Routes
 app.use('/api/agents', agentRoutes);
 app.use('/api/leads', leadRoutes);

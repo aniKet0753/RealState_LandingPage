@@ -14,7 +14,7 @@ const authenticateToken = (req, res, next) => {
     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
         if (err) {
             console.error('Token verification failed:', err.message);
-            return res.status(403).json({ message: 'Access Denied: Invalid or expired token.' });
+            return res.status(403).json({ message: 'Access Denied: Invalid or expired token. Please re-login' });
         }
 
         // Calculate remaining time until token expiration

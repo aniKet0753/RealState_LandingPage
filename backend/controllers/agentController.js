@@ -61,25 +61,43 @@ exports.signupAgent = async (req, res) => {
 
 // Agent Login
 exports.loginAgent = async (req, res) => {
-    const { email, password } = req.body;
+    const { emailOrPhone, password } = req.body;
     try {
-        const { data: agent, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('email', email)
-            .single();
+        let agent;
 
-        if (error || !agent) {
-            return res.status(401).json({ error: 'Invalid email or password.' });
+        // Find the user by either email or phone
+        if (emailOrPhone.includes('@')) {
+            const { data } = await supabase
+                .from('users')
+                .select('*')
+                .eq('email', emailOrPhone)
+                .single();
+            agent = data;
+        } else {
+            const { data } = await supabase
+                .from('users')
+                .select('*')
+                .eq('phone_number', emailOrPhone)
+                .single();
+            agent = data;
         }
 
-        // Compare the provided password with the stored hashed password
+        // Case 1: No user found with the given email or phone
+        if (!agent) {
+            if (emailOrPhone.includes('@')) {
+                return res.status(401).json({ error: 'Email not found.' });
+            } else {
+                return res.status(401).json({ error: 'Phone number not found.' });
+            }
+        }
+
+        // Case 2: User found, but password does not match
         const passwordMatch = await bcrypt.compare(password, agent.password);
         if (!passwordMatch) {
-            return res.status(401).json({ error: 'Invalid email or password.' });
+            return res.status(401).json({ error: 'Incorrect password.' });
         }
 
-        // Generate a JWT
+        // Case 3: Login successful
         const token = jwt.sign(
             {
                 userId: agent.id,
@@ -87,7 +105,7 @@ exports.loginAgent = async (req, res) => {
             },
             process.env.JWT_SECRET,
             {
-                expiresIn: '1h'
+                expiresIn: '7d' // Token valid for 7 days
             }
         );
 

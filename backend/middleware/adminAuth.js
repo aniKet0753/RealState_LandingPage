@@ -21,7 +21,7 @@ const adminAuth = (req, res, next) => {
             res.status(403).json({ message: 'Access denied. Admins only.' });
         }
     } catch (err) {
-        res.status(403).json({ message: 'Invalid or expired token.' });
+        res.status(403).json({ message: 'Invalid or expired token. Please re-login' });
     }
 };
 
