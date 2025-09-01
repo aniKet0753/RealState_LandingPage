@@ -11,6 +11,10 @@ app.use(express.json());
 app.use('/api/agents', agentRoutes);
 app.use('/api/leads', leadRoutes);
 
+app.get('/', (req, res) => {
+    res.send('AgentSuit Backend API is working!');
+});
+
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
