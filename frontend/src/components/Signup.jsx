@@ -1,13 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../api';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { FaEye, FaEyeSlash, FaShieldAlt, FaPlusCircle, FaHeadset } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaShieldAlt, FaPlusCircle, FaHeadset, FaSearch, FaChevronDown, FaCheckCircle, FaExclamationCircle, FaTimes } from 'react-icons/fa';
+
+// Hardcoded state and city data for the searchable dropdown
+const STATES_AND_CITIES = {
+  'California': ['Los Angeles', 'San Francisco', 'San Diego', 'Sacramento'],
+  'New York': ['New York City', 'Buffalo', 'Rochester', 'Albany'],
+  'Texas': ['Houston', 'Dallas', 'Austin', 'San Antonio'],
+  'Florida': ['Miami', 'Orlando', 'Tampa', 'Jacksonville'],
+  'Illinois': ['Chicago', 'Springfield', 'Peoria', 'Rockford'],
+  'Washington': ['Seattle', 'Spokane', 'Tacoma', 'Vancouver'],
+  'Arizona': ['Phoenix', 'Tucson', 'Mesa', 'Chandler'],
+  'Colorado': ['Denver', 'Colorado Springs', 'Aurora', 'Fort Collins'],
+  'Massachusetts': ['Boston', 'Worcester', 'Springfield', 'Cambridge'],
+  'Georgia': ['Atlanta', 'Augusta', 'Columbus', 'Savannah'],
+};
 
 const SignupPage = () => {
   const navigate = useNavigate();
-  // State to hold form data
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -22,93 +35,296 @@ const SignupPage = () => {
     terms: false,
     communications: false,
   });
-  // State for loading and password visibility
+
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState('Weak');
+  const [passwordValidation, setPasswordValidation] = useState({
+    length: false,
+    lowercase: false,
+    uppercase: false,
+    number: false,
+    specialChar: false,
+  });
+  const [validationErrors, setValidationErrors] = useState({});
 
-  // Handle input changes
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
+  // OTP state
+  const [showOtpPopup, setShowOtpPopup] = useState(false);
+  const [otp, setOtp] = useState({ email: '', phone: '' });
+  const [isEmailOtpVerified, setIsEmailOtpVerified] = useState(false);
+  const [isPhoneOtpVerified, setIsPhoneOtpVerified] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [emailTimer, setEmailTimer] = useState(0);
+  const [phoneTimer, setPhoneTimer] = useState(0);
+  const [otpErrors, setOtpErrors] = useState({ email: '', phone: '' });
+  const [finalSubmitError, setFinalSubmitError] = useState('');
+
+  // States for searchable dropdowns
+  const [filteredStates, setFilteredStates] = useState(Object.keys(STATES_AND_CITIES));
+  const [stateSearch, setStateSearch] = useState('');
+  const [isStateDropdownOpen, setIsStateDropdownOpen] = useState(false);
+
+  const [filteredCities, setFilteredCities] = useState([]);
+  const [citySearch, setCitySearch] = useState('');
+  const [isCityDropdownOpen, setIsCityDropdownOpen] = useState(false);
+
+  // Check password strength and validation rules
+  const checkPasswordValidation = (password) => {
+    const rules = {
+      length: password.length >= 8,
+      lowercase: /[a-z]/.test(password),
+      uppercase: /[A-Z]/.test(password),
+      number: /[0-9]/.test(password),
+      specialChar: /[^a-zA-Z0-9]/.test(password),
+    };
+    setPasswordValidation(rules);
+
+    let strength = 0;
+    if (rules.length) strength++;
+    if (rules.lowercase && rules.uppercase) strength++;
+    if (rules.number) strength++;
+    if (rules.specialChar) strength++;
+
+    switch (strength) {
+      case 0:
+      case 1:
+        return 'Weak';
+      case 2:
+      case 3:
+        return 'Medium';
+      case 4:
+        return 'Strong';
+      default:
+        return 'Weak';
+    }
   };
 
-  // Toggle password visibility
+  // Handle input changes, now with phone number length enforcement
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    let newValue = type === 'checkbox' ? checked : value;
+
+    // Limit phone number to 10 characters
+    if (name === 'phone_number') {
+      if (newValue.length > 10) {
+        return; // Do not update state if the value is more than 10 characters
+      }
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: newValue,
+    }));
+
+    if (name === 'password') {
+      setPasswordStrength(checkPasswordValidation(newValue));
+    }
+
+    // Clear validation error on change
+    if (validationErrors[name]) {
+      setValidationErrors((prev) => ({ ...prev, [name]: '' }));
+    }
+  };
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
-  // Handle form submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
+  // Handle searchable dropdown
+  const handleStateSelect = (state) => {
+    setFormData((prev) => ({ ...prev, state, city: '' }));
+    setIsStateDropdownOpen(false);
+    setFilteredCities(STATES_AND_CITIES[state] || []);
+    setCitySearch('');
+    setValidationErrors((prev) => ({ ...prev, state: '', city: '' }));
+  };
 
-    // Basic validation
+  const handleCitySelect = (city) => {
+    setFormData((prev) => ({ ...prev, city }));
+    setIsCityDropdownOpen(false);
+    setValidationErrors((prev) => ({ ...prev, city: '' }));
+  };
+
+  // Filter states based on search input
+  useEffect(() => {
+    setFilteredStates(
+      Object.keys(STATES_AND_CITIES).filter((state) =>
+        state.toLowerCase().includes(stateSearch.toLowerCase())
+      )
+    );
+  }, [stateSearch]);
+
+  // Filter cities based on search input
+  useEffect(() => {
+    if (formData.state) {
+      setFilteredCities(
+        (STATES_AND_CITIES[formData.state] || []).filter((city) =>
+          city.toLowerCase().includes(citySearch.toLowerCase())
+        )
+      );
+    }
+  }, [citySearch, formData.state]);
+
+  // Email OTP timer
+  useEffect(() => {
+    if (emailTimer > 0) {
+      const timerId = setInterval(() => {
+        setEmailTimer((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(timerId);
+    }
+  }, [emailTimer]);
+
+  // Phone OTP timer
+  useEffect(() => {
+    if (phoneTimer > 0) {
+      const timerId = setInterval(() => {
+        setPhoneTimer((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(timerId);
+    }
+  }, [phoneTimer]);
+
+  const handleSendOtp = async (type) => {
+    setIsSendingOtp(true);
+    setOtpErrors({ email: '', phone: '' });
+    try {
+      if (type === 'email') {
+        await axios.post('/api/otp/send-otp', { identifier: formData.email , type: 'email'});
+        toast.success('Email OTP sent.');
+        setEmailTimer(30);
+      } else if (type === 'phone') {
+        await axios.post('/api/otp/send-otp', { identifier: formData.phone_number, type: 'phone_number' });
+        toast.success('Phone OTP sent.');
+        setPhoneTimer(30);
+      }
+    } catch (err) {
+      console.error(`Failed to send ${type} OTP:`, err);
+      // Set inline error instead of a toast
+      setOtpErrors(prev => ({ ...prev, [type]: `${err.response.data.error}` }));
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
+
+  const handleVerifyOtp = async (type) => {
+    setIsVerifyingOtp(true);
+    setOtpErrors({ email: '', phone: '' });
+    try {
+      const payload = type === 'email' ? { identifier: formData.email, otp: otp.email } : { identifier: formData.phone_number, otp: otp.phone };
+      await axios.post('/api/otp/verify-otp', payload);
+
+      if (type === 'email') {
+        setIsEmailOtpVerified(true);
+        toast.success('Email OTP verified!');
+      } else {
+        setIsPhoneOtpVerified(true);
+        toast.success('Phone OTP verified!');
+      }
+    } catch (err) {
+      console.error(`OTP verification failed for ${type}:`, err);
+      // Set inline error for the specific OTP field
+      setOtpErrors(prev => ({ ...prev, [type]: `Invalid ${type} OTP. Please try again.` }));
+    } finally {
+      setIsVerifyingOtp(false);
+    }
+  };
+
+  const handleOpenOtpModal = (e) => {
+    e.preventDefault();
+
+    let errors = {};
+    const requiredFields = ['first_name', 'last_name', 'email', 'phone_number', 'company_name', 'address', 'city', 'state', 'password', 'confirmPassword'];
+    
+    requiredFields.forEach(field => {
+      if (!formData[field]) {
+        errors[field] = 'This field is required.';
+      }
+    });
+
+    if (formData.phone_number && formData.phone_number.length !== 10) {
+      errors.phone_number = 'Phone number must be exactly 10 digits.';
+    }
+
     if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords do not match.", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
-      setIsLoading(false);
+      errors.password = 'Passwords do not match.';
+      errors.confirmPassword = 'Passwords do not match.';
+    }
+
+    if (!Object.values(passwordValidation).every(Boolean)) {
+      errors.password = 'Please meet all password requirements.';
+    }
+
+    if (!formData.terms) {
+      errors.terms = 'You must agree to the Terms of Service.';
+    }
+
+    setValidationErrors(errors);
+
+    if (Object.keys(errors).length > 0) {
       return;
     }
 
+    handleSendOtp('email');
+    // handleSendOtp('phone');
+    toast.success('OTPs are being sent to your email and phone.');
+    setShowOtpPopup(true);
+  };
+
+  const handleCloseOtpModal = () => {
+    setShowOtpPopup(false);
+    // Optionally reset OTP states if the user closes the modal
+    setOtp({ email: '', phone: '' });
+    setIsEmailOtpVerified(false);
+    setIsPhoneOtpVerified(false);
+    setOtpErrors({ email: '', phone: '' });
+    setFinalSubmitError('');
+    setEmailTimer(0);
+    setPhoneTimer(0);
+  };
+  
+  const handleFinalSubmit = async (e) => {
+    e.preventDefault();
+    setFinalSubmitError(''); // Clear any previous error message
+
+    // if (!isEmailOtpVerified || !isPhoneOtpVerified) {
+    // setFinalSubmitError("Please verify both email and phone OTPs first.");
+    //   return;
+    // }
+    if (!isEmailOtpVerified ) {
+      setFinalSubmitError("Please verify both email OTP first.");
+      return;
+    }
+    
+    // Main form submission logic
+    setIsLoading(true);
     try {
-      // Replace with your actual API endpoint
-      const response = await axios.post('/api/agents/signup', {
-        first_name: formData.first_name,
-        last_name: formData.last_name,
-        email: formData.email,
-        phone_number: formData.phone_number,
-        company_name: formData.company_name,
-        address: formData.address,
-        city: formData.city,
-        state: formData.state,
-        password: formData.password,
-      });
+        // Here, payload will contain everything from formData except the excluded fields[confirmPassword, terms,communications ].
+        const { confirmPassword, terms, communications, ...payload } = formData;
 
-      console.log('Signup successful:', response.data);
-      toast.success('Signup successful! Redirecting to login...', {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
+        const response = await axios.post('/api/agents/signup', payload);
 
-      // Navigate after a short delay to allow the toast to be seen
-      setTimeout(() => {
-        navigate('/login');
-      }, 2000);
+        console.log('Signup successful:', response.data);
+        toast.success('Signup successful! Redirecting to login...', { autoClose: 2000 });
+        setTimeout(() => navigate('/login'), 2000);
+
     } catch (err) {
-      console.error('Signup failed:', err);
-      toast.error(`Signup failed: ${err.response?.data?.error || 'An unknown error occurred.'}`, {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
+        console.error('Signup failed:', err);
+        setFinalSubmitError(`Signup failed: ${err.response?.data?.error || 'An unknown error occurred.'}`);
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
+        // setShowOtpPopup(false); // Do not close modal on error, let the user try again
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-between min-h-screen bg-[#121212] text-white font-sans">
-      <ToastContainer />
-      <div className="flex-1 flex flex-col items-center justify-center p-4 w-full">
+    <div className={`flex flex-col items-center justify-center bg-[#121212] text-white font-sans ${showOtpPopup ? 'filter backdrop-blur-sm' : ''}`}>
+      {/* This is the change. We add a style prop to set the zIndex to a high value.
+        This ensures the toasts appear on top of all other elements, including pop-ups.
+      */}
+      <ToastContainer style={{ zIndex: 9999 }} />
+      <div className="flex flex-col items-center p-4 w-full h-full justify-center">
         <h1 className="text-4xl font-bold mb-10">
           <span className="text-white">AGENTS</span><span className="text-[#96a099]">UIT</span>
         </h1>
@@ -117,38 +333,80 @@ const SignupPage = () => {
           <h2 className="text-2xl font-semibold text-center mb-2">Create Your Account</h2>
           <p className="text-gray-400 text-center text-sm mb-6">Join Agentsuit and transform your lead management</p>
           
-          <form className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4" onSubmit={handleSubmit}>
+          <form className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
             <div>
               <label className="block text-sm text-gray-400 mb-1">First Name</label>
-              <input type="text" name="first_name" value={formData.first_name} onChange={handleChange} className="w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600" placeholder="Enter your first name" required/>
+              <input type="text" name="first_name" value={formData.first_name} onChange={handleChange} className={`w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600 ${validationErrors.first_name ? 'border-2 border-red-500' : ''}`} placeholder="Enter your first name" required/>
+              {validationErrors.first_name && <p className="text-red-500 text-sm mt-1">{validationErrors.first_name}</p>}
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-1">Last Name</label>
-              <input type="text" name="last_name" value={formData.last_name} onChange={handleChange} className="w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600" placeholder="Enter your last name" required/>
+              <input type="text" name="last_name" value={formData.last_name} onChange={handleChange} className={`w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600 ${validationErrors.last_name ? 'border-2 border-red-500' : ''}`} placeholder="Enter your last name" required/>
+              {validationErrors.last_name && <p className="text-red-500 text-sm mt-1">{validationErrors.last_name}</p>}
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-1">Email Address</label>
-              <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600" placeholder="Enter your email address" required/>
+              <input type="email" name="email" value={formData.email} onChange={handleChange} className={`w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600 ${validationErrors.email ? 'border-2 border-red-500' : ''}`} placeholder="Enter your email address" required/>
+              {validationErrors.email && <p className="text-red-500 text-sm mt-1">{validationErrors.email}</p>}
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-1">Phone Number</label>
-              <input type="tel" name="phone_number" value={formData.phone_number} onChange={handleChange} className="w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600" placeholder="Enter your phone number" required/>
+              <input type="tel" name="phone_number" value={formData.phone_number} onChange={handleChange} className={`w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600 ${validationErrors.phone_number ? 'border-2 border-red-500' : ''}`} placeholder="Enter your phone number" maxLength="10" required/>
+              {validationErrors.phone_number && <p className="text-red-500 text-sm mt-1">{validationErrors.phone_number}</p>}
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-1">Company Name</label>
-              <input type="text" name="company_name" value={formData.company_name} onChange={handleChange} className="w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600" placeholder="Enter your company name" required/>
+              <input type="text" name="company_name" value={formData.company_name} onChange={handleChange} className={`w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600 ${validationErrors.company_name ? 'border-2 border-red-500' : ''}`} placeholder="Enter your company name" required/>
+              {validationErrors.company_name && <p className="text-red-500 text-sm mt-1">{validationErrors.company_name}</p>}
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-1">Address</label>
-              <input type="text" name="address" value={formData.address} onChange={handleChange} className="w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600" placeholder="Enter your address" required/>
+              <input type="text" name="address" value={formData.address} onChange={handleChange} className={`w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600 ${validationErrors.address ? 'border-2 border-red-500' : ''}`} placeholder="Enter your address" required/>
+              {validationErrors.address && <p className="text-red-500 text-sm mt-1">{validationErrors.address}</p>}
             </div>
-            <div>
-              <label className="block text-sm text-gray-400 mb-1">City</label>
-              <input type="text" name="city" value={formData.city} onChange={handleChange} className="w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600" placeholder="Enter your city" required/>
-            </div>
-            <div>
+            <div className="relative">
               <label className="block text-sm text-gray-400 mb-1">State</label>
-              <input type="text" name="state" value={formData.state} onChange={handleChange} className="w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600" placeholder="Enter your state" required/>
+              <div className="relative">
+                <div onClick={() => setIsStateDropdownOpen(!isStateDropdownOpen)} className={`w-full bg-[#2c2c2c] text-white rounded-md p-3 cursor-pointer flex justify-between items-center ${validationErrors.state ? 'border-2 border-red-500' : ''}`}>
+                  <span>{formData.state || 'Select your state'}</span>
+                  <FaChevronDown className="text-gray-400" />
+                </div>
+                {isStateDropdownOpen && (
+                  <div className="absolute z-10 w-full mt-2 bg-[#2c2c2c] rounded-md shadow-lg max-h-48 overflow-y-auto custom-scrollbar">
+                    <div className="relative p-2">
+                      <input type="text" value={stateSearch} onChange={(e) => setStateSearch(e.target.value)} placeholder="Search state..." className="w-full bg-[#3c3c3c] text-white rounded-md p-2 focus:outline-none" />
+                    </div>
+                    {filteredStates.map((state) => (
+                      <div key={state} onClick={() => handleStateSelect(state)} className="p-2 cursor-pointer hover:bg-[#3c3c3c]">
+                        {state}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {validationErrors.state && <p className="text-red-500 text-sm mt-1">{validationErrors.state}</p>}
+            </div>
+            <div className="relative">
+              <label className="block text-sm text-gray-400 mb-1">City</label>
+              <div className="relative">
+                <div onClick={() => { if (formData.state) setIsCityDropdownOpen(!isCityDropdownOpen) }} className={`w-full bg-[#2c2c2c] text-white rounded-md p-3 cursor-pointer flex justify-between items-center ${!formData.state ? 'opacity-50' : ''} ${validationErrors.city ? 'border-2 border-red-500' : ''}`}>
+                  <span>{formData.city || 'Select your city'}</span>
+                  <FaChevronDown className="text-gray-400" />
+                </div>
+                {isCityDropdownOpen && (
+                  <div className="absolute z-10 w-full mt-2 bg-[#2c2c2c] rounded-md shadow-lg max-h-48 overflow-y-auto custom-scrollbar">
+                    <div className="relative p-2">
+                      <input type="text" value={citySearch} onChange={(e) => setCitySearch(e.target.value)} placeholder="Search city..." className="w-full bg-[#3c3c3c] text-white rounded-md p-2 focus:outline-none" />
+                    </div>
+                    {filteredCities.map((city) => (
+                      <div key={city} onClick={() => handleCitySelect(city)} className="p-2 cursor-pointer hover:bg-[#3c3c3c]">
+                        {city}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {validationErrors.city && <p className="text-red-500 text-sm mt-1">{validationErrors.city}</p>}
             </div>
             <div className="col-span-1 md:col-span-1">
               <label className="block text-sm text-gray-400 mb-1">Password</label>
@@ -158,9 +416,9 @@ const SignupPage = () => {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600 pr-10"
+                  className={`w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600 pr-10 ${validationErrors.password ? 'border-2 border-red-500' : ''}`}
                   placeholder="Create a strong password"
-                required/>
+                  required/>
                 <span
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"
                   onClick={togglePasswordVisibility}
@@ -172,7 +430,41 @@ const SignupPage = () => {
                   )}
                 </span>
               </div>
-              <p className="text-xs text-gray-500 mt-1">Must be at least 8 characters with numbers and symbols</p>
+              {formData.password && (
+                <div className="mt-2 flex flex-col space-y-2">
+                  <div className="flex items-center">
+                    <div className="flex-1 bg-gray-600 h-2 rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full transition-all duration-300
+                        ${passwordStrength === 'Strong' ? 'bg-green-500 w-full' : passwordStrength === 'Medium' ? 'bg-yellow-500 w-2/3' : 'bg-red-500 w-1/3'}
+                      `}></div>
+                    </div>
+                    <span className={`ml-2 text-xs font-semibold
+                      ${passwordStrength === 'Strong' ? 'text-green-500' : passwordStrength === 'Medium' ? 'text-yellow-500' : 'text-red-500'}
+                    `}>
+                      {passwordStrength}
+                    </span>
+                  </div>
+                  <ul className="text-gray-400 text-xs">
+                    <li className={`flex items-center ${passwordValidation.length ? 'text-green-500' : ''}`}>
+                      {passwordValidation.length ? <FaCheckCircle className="mr-2" /> : <FaExclamationCircle className="mr-2" />}
+                      At least 8 characters long
+                    </li>
+                    <li className={`flex items-center ${passwordValidation.lowercase && passwordValidation.uppercase ? 'text-green-500' : ''}`}>
+                      {passwordValidation.lowercase && passwordValidation.uppercase ? <FaCheckCircle className="mr-2" /> : <FaExclamationCircle className="mr-2" />}
+                      Includes uppercase and lowercase letters
+                    </li>
+                    <li className={`flex items-center ${passwordValidation.number ? 'text-green-500' : ''}`}>
+                      {passwordValidation.number ? <FaCheckCircle className="mr-2" /> : <FaExclamationCircle className="mr-2" />}
+                      Includes a number
+                    </li>
+                    <li className={`flex items-center ${passwordValidation.specialChar ? 'text-green-500' : ''}`}>
+                      {passwordValidation.specialChar ? <FaCheckCircle className="mr-2" /> : <FaExclamationCircle className="mr-2" />}
+                      Includes a special character
+                    </li>
+                  </ul>
+                </div>
+              )}
+              {validationErrors.password && <p className="text-red-500 text-sm mt-1">{validationErrors.password}</p>}
             </div>
             <div className="col-span-1 md:col-span-1">
               <label className="block text-sm text-gray-400 mb-1">Confirm Password</label>
@@ -182,8 +474,9 @@ const SignupPage = () => {
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600 pr-10"
-                  placeholder="Create a strong password"
+                  className={`w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600 pr-10 ${validationErrors.confirmPassword ? 'border-2 border-red-500' : ''}`}
+                  placeholder="Confirm your password"
+                  required
                 />
                 <span
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"
@@ -196,14 +489,17 @@ const SignupPage = () => {
                   )}
                 </span>
               </div>
+              {validationErrors.confirmPassword && <p className="text-red-500 text-sm mt-1">{validationErrors.confirmPassword}</p>}
             </div>
 
             <div className="flex items-center mt-4 col-span-full">
-              <input type="checkbox" id="terms" name="terms" checked={formData.terms} onChange={handleChange} className="mr-2 accent-yellow-600" />
+              <input type="checkbox" id="terms" name="terms" checked={formData.terms} onChange={handleChange} className={`mr-2 accent-yellow-600 ${validationErrors.terms ? 'border-2 border-red-500' : ''}`} required />
               <label htmlFor="terms" className="text-gray-400 text-sm">
                 I agree to Agentsuit's <a href="#" className="text-white hover:underline">Terms of Service</a> and <a href="#" className="text-white hover:underline">Privacy Policy</a>
               </label>
             </div>
+            {validationErrors.terms && <p className="text-red-500 text-sm col-span-full">{validationErrors.terms}</p>}
+
             <div className="flex items-center col-span-full">
               <input type="checkbox" id="communications" name="communications" checked={formData.communications} onChange={handleChange} className="mr-2 accent-yellow-600" />
               <label htmlFor="communications" className="text-gray-400 text-sm">
@@ -212,11 +508,12 @@ const SignupPage = () => {
             </div>
 
             <button
-              type="submit"
+              type="button"
+              onClick={handleOpenOtpModal}
               disabled={isLoading}
               className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 rounded-md transition-colors mt-4 col-span-full disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Creating...' : 'Create Account'}
+              Create Account
             </button>
           </form>
 
@@ -227,7 +524,7 @@ const SignupPage = () => {
           </div>
           
           <div className="text-center text-gray-500 text-sm">
-            Don't have an account? <a href="#" className="text-white hover:underline" onClick={() => navigate('/login')}>Sign in</a>
+            Already have an account? <a href="#" className="text-white hover:underline" onClick={() => navigate('/login')}>Sign in</a>
           </div>
         </div>
 
@@ -262,6 +559,107 @@ const SignupPage = () => {
         <span className="mx-2">|</span>
         <a href="#" className="hover:underline">Contact Support</a>
       </div>
+
+      {showOtpPopup && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm position-relative top-20">
+          <div className="bg-[#1e1e1e] p-8 rounded-lg shadow-xl w-full max-w-sm text-white relative" style={{position: "absolute", top: "5%"}}>
+            <button onClick={handleCloseOtpModal} className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors">
+              <FaTimes size={20} />
+            </button>
+            <h3 className="text-xl font-semibold text-center mb-4">Verify Your Account</h3>
+            <p className="text-gray-400 text-sm text-center mb-6">
+              An OTP has been sent to your email and phone number.
+            </p>
+
+            {/* Email OTP Section */}
+            <div className="space-y-4 mb-6">
+              <label className="block text-sm text-gray-400">Email OTP</label>
+              <div className="relative flex items-center">
+                <input
+                  type="text"
+                  value={otp.email}
+                  onChange={(e) => setOtp({ ...otp, email: e.target.value })}
+                  className={`w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600 ${isEmailOtpVerified ? 'bg-green-600' : ''}`}
+                  placeholder="Enter Email OTP"
+                  maxLength="6"
+                  disabled={isEmailOtpVerified}
+                />
+                {isEmailOtpVerified ? (
+                  <FaCheckCircle className="absolute right-3 text-green-500" size={20} />
+                ) : (
+                  <button
+                    onClick={() => handleVerifyOtp('email')}
+                    disabled={isVerifyingOtp}
+                    className="ml-2 bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Verify
+                  </button>
+                )}
+              </div>
+              {otpErrors.email && <p className="text-red-500 text-sm mt-1">{otpErrors.email}</p>}
+              <div className="flex justify-between text-xs text-gray-400">
+                <span>Resend OTP in {emailTimer}s</span>
+                <button
+                  onClick={() => handleSendOtp('email')}
+                  disabled={emailTimer > 0 || isSendingOtp}
+                  className={`text-yellow-600 hover:underline ${emailTimer > 0 || isSendingOtp ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  Resend
+                </button>
+              </div>
+            </div>
+
+            {/* Phone OTP Section */}
+            {/* <div className="space-y-4 mb-6">
+              <label className="block text-sm text-gray-400">Phone OTP</label>
+              <div className="relative flex items-center">
+                <input
+                  type="text"
+                  value={otp.phone}
+                  onChange={(e) => setOtp({ ...otp, phone: e.target.value })}
+                  className={`w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600 ${isPhoneOtpVerified ? 'bg-green-600' : ''}`}
+                  placeholder="Enter Phone OTP"
+                  maxLength="6"
+                  disabled={isPhoneOtpVerified}
+                />
+                {isPhoneOtpVerified ? (
+                  <FaCheckCircle className="absolute right-3 text-green-500" size={20} />
+                ) : (
+                  <button
+                    onClick={() => handleVerifyOtp('phone')}
+                    disabled={isVerifyingOtp}
+                    className="ml-2 bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Verify
+                  </button>
+                )}
+              </div>
+              {otpErrors.phone && <p className="text-red-500 text-sm mt-1">{otpErrors.phone}</p>}
+              <div className="flex justify-between text-xs text-gray-400">
+                <span>Resend OTP in {phoneTimer}s</span>
+                <button
+                  onClick={() => handleSendOtp('phone')}
+                  disabled={phoneTimer > 0 || isSendingOtp}
+                  className={`text-yellow-600 hover:underline ${phoneTimer > 0 || isSendingOtp ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  Resend
+                </button>
+              </div>
+            </div> */}
+
+            <button
+              type="button"
+              onClick={handleFinalSubmit}
+              // disabled={!isEmailOtpVerified || !isPhoneOtpVerified || isLoading}
+              disabled={!isEmailOtpVerified || isLoading}
+              className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Proceed and Create Account
+            </button>
+            {finalSubmitError && <p className="text-red-500 text-sm text-center mt-2">{finalSubmitError}</p>}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

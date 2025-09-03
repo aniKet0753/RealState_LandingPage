@@ -9,7 +9,9 @@ app.use(express.json());
 app.use(cors());
 // Routes
 app.use('/api/agents', agentRoutes);
+
 app.use('/api/leads', leadRoutes);
+app.use('/api/otp', require('./routes/otpRoutes'));
 
 app.get('/', (req, res) => {
     res.send('AgentSuit Backend API is working!');

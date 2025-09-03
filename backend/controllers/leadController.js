@@ -17,7 +17,8 @@ exports.addLead = async (req, res) => {
         preferred_location,
         bedrooms,
         bathrooms,
-        timeline
+        timeline,
+        social_media
     } = req.body;
 
     console.log(req.body);
@@ -40,6 +41,7 @@ exports.addLead = async (req, res) => {
                 bedrooms,
                 bathrooms,
                 timeline,
+                social_media
             }])
             .select();
 

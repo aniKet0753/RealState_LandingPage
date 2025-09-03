@@ -7,44 +7,57 @@ import { FaEye, FaEyeSlash, FaShieldAlt, FaPlusCircle, FaHeadset } from 'react-i
 
 const LoginPage = ({ onLogin }) => {
   const navigate = useNavigate();
-  // State to hold form data
   const [formData, setFormData] = useState({
     emailOrPhone: '',
     password: '',
     rememberMe: false,
   });
-  // State to toggle password visibility
   const [showPassword, setShowPassword] = useState(false);
-  // State for loading and error messages
   const [isLoading, setIsLoading] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({});
 
-  // Handle input changes
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
     }));
+
+    // Clear validation error on change
+    if (validationErrors[name]) {
+      setValidationErrors((prev) => ({ ...prev, [name]: false }));
+    }
   };
 
-  // Toggle password visibility
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    let errors = {};
+
+    // Basic form validation
+    const requiredFields = ['emailOrPhone', 'password'];
+    requiredFields.forEach(field => {
+      if (!formData[field]) {
+        errors[field] = true;
+      }
+    });
+
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      setIsLoading(false);
+      return;
+    }
 
     try {
-      // Replace with your actual API endpoint
       const response = await axios.post('/api/agents/login', {
         emailOrPhone: formData.emailOrPhone,
         password: formData.password,
       });
 
-      // Save token to localStorage if "Remember me" is checked
       if (formData.rememberMe) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user_id', response.data.agent.id);
@@ -53,44 +66,24 @@ const LoginPage = ({ onLogin }) => {
         sessionStorage.setItem('user_id', response.data.agent.id);
       }
 
-      // Call the onLogin prop to update the parent's authentication state
       onLogin(true);
-
       console.log('Login successful:', response.data);
-      toast.success('Login successful!', {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
+      toast.success('Login successful!', { autoClose: 2000 });
+      setTimeout(() => navigate('/dashboard'), 2000);
 
-      // Navigate after a short delay to allow the toast to be seen
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 2000);
     } catch (err) {
       console.error(`Login failed:, ${err.response?.data?.error}`);
-      toast.error(`Login failed: ${err.response?.data?.error || 'An unknown error occurred.'}`, {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
+      toast.error(`Login failed: ${err.response?.data?.error || 'An unknown error occurred.'}`);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-between min-h-screen bg-[#121212] text-white font-sans">
+    // The h-screen and overflow-hidden classes are removed here.
+    <div className="flex flex-col items-center justify-center bg-[#121212] text-white font-sans">
       <ToastContainer />
-      <div className="flex-1 flex flex-col items-center justify-center p-4 w-full">
+      <div className="flex flex-col items-center p-4 w-full h-full justify-center">
         <h1 className="text-4xl font-bold mb-10">
           <span className="text-white">AGENTS</span><span className="text-[#96a099]">UIT</span>
         </h1>
@@ -106,7 +99,7 @@ const LoginPage = ({ onLogin }) => {
                 name="emailOrPhone"
                 value={formData.emailOrPhone}
                 onChange={handleChange}
-                className="w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600"
+                className={`w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600 ${validationErrors.emailOrPhone ? 'border-2 border-red-500' : ''}`}
                 placeholder="Email or Phone Number"
                 required
               />
@@ -117,7 +110,7 @@ const LoginPage = ({ onLogin }) => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600 pr-10"
+                className={`w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600 pr-10 ${validationErrors.password ? 'border-2 border-red-500' : ''}`}
                 placeholder="Password"
                 required
               />

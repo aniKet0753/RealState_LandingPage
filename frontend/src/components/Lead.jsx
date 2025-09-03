@@ -1,14 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Filter, Download, ChevronDown, MoreHorizontal, Search, Send } from 'lucide-react';
+import { Search, Plus, Filter, Download, MoreHorizontal, ChevronDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const DashboardPage = ({ isMobile, isTablet, closePanels }) => {
-  const statCards = [
-    { title: 'Total Leads', value: '247', change: '+12%', arrow: 'up' },
-    { title: 'New This Week', value: '32', change: '+8%', arrow: 'up' },
-    { title: 'Qualified Leads', value: '86', change: '-3%', arrow: 'down' },
-    { title: 'Conversion Rate', value: '24.8%', change: '+5%', arrow: 'up' },
-  ];
+const LeadPage = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1024);
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   const leads = [
     { name: 'Sarah Johnson', title: 'Buyer', email: 'sarah.j@example.com', phone: '(555) 123-4567', status: 'Qualified', source: 'Website', lastContact: 'Aug 12, 2025', avatar: 'SJ' },
@@ -16,20 +23,7 @@ const DashboardPage = ({ isMobile, isTablet, closePanels }) => {
     { name: 'Alex Rodriguez', title: 'Investor', email: 'arod@example.com', phone: '(555) 234-5678', status: 'New', source: 'Social Media', lastContact: 'Aug 8, 2025', avatar: 'AR' },
     { name: 'Emily Taylor', title: 'Buyer', email: 'e.taylor@example.com', phone: '(555) 876-5432', status: 'Cold', source: 'Zillow', lastContact: 'Aug 5, 2025', avatar: 'ET' },
   ];
-
-  const aiInsights = [
-    "Good morning! Here are today's insights:",
-    "3 follow-ups scheduled for today",
-    "Sarah Johnson ready to make an offer",
-    "Market prices rising 5% in your area"
-  ];
-
-  const tasks = [
-    { title: 'Call Sarah Johnson about offer details', time: '10:30 AM', priority: 'High' },
-    { title: 'Prepare listing presentation', time: '1:00 PM', priority: 'Medium' },
-    { title: 'Submit paperwork for closing', time: '9:00 AM', priority: 'Done' },
-  ];
-
+  
   return (
     <div className="flex-1 flex flex-col overflow-y-auto bg-slate-900 p-3 md:p-6">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 md:mb-6 space-y-3 md:space-y-0">
@@ -59,25 +53,7 @@ const DashboardPage = ({ isMobile, isTablet, closePanels }) => {
         </div>
       </div>
 
-      <div className={`grid gap-3 md:gap-6 mb-6 md:mb-8 ${
-        isMobile ? 'grid-cols-2' : isTablet ? 'grid-cols-2' : 'grid-cols-4'
-      }`}>
-        {statCards.map((card, index) => (
-          <div key={index} className="bg-slate-800 p-3 md:p-4 rounded border border-slate-700">
-            <div className={`text-slate-500 mb-1 ${isMobile ? 'text-xs' : 'text-sm'}`}>{card.title}</div>
-            <div className="flex items-end justify-between">
-              <div className={`font-medium text-white ${isMobile ? 'text-lg' : 'text-2xl'}`}>{card.value}</div>
-              <div className={`flex items-center ${card.arrow === 'up' ? 'text-slate-300' : 'text-slate-400'} ${
-                isMobile ? 'text-xs' : 'text-sm'
-              }`}>
-                <span>{card.arrow === 'up' ? '↑' : '↓'}</span>
-                <span className="ml-1">{card.change}</span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
+      {/* Lead Overview */}
       <div className="bg-slate-800 rounded border border-slate-700 p-3 md:p-4 mb-4 md:mb-6">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 space-y-3 md:space-y-0">
           <h2 className={`text-white ${isMobile ? 'text-base' : 'text-lg'}`}>Lead Overview</h2>
@@ -93,6 +69,7 @@ const DashboardPage = ({ isMobile, isTablet, closePanels }) => {
           </div>
         </div>
         
+        {/* Mobile Cards View */}
         {isMobile ? (
           <div className="space-y-3">
             {leads.map((lead, index) => (
@@ -123,6 +100,7 @@ const DashboardPage = ({ isMobile, isTablet, closePanels }) => {
             ))}
           </div>
         ) : (
+          /* Desktop/Tablet Table View */
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -203,78 +181,8 @@ const DashboardPage = ({ isMobile, isTablet, closePanels }) => {
           </div>
         </div>
       </div>
-
-      <div className={`grid gap-4 md:gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
-        <div className="bg-slate-800 rounded border border-slate-700 p-3 md:p-4">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className={`text-white ${isMobile ? 'text-base' : 'text-lg'}`}>AI Assistant</h2>
-            <button className="text-slate-400 hover:text-slate-300">
-              <MoreHorizontal size={16} />
-            </button>
-          </div>
-          <div className="space-y-3 md:space-y-4">
-            {aiInsights.slice(0, isMobile ? 2 : 3).map((insight, index) => (
-              <div key={index} className="flex items-start space-x-3">
-                <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-slate-600 flex items-center justify-center text-xs text-white flex-shrink-0">
-                  AI
-                </div>
-                <div className="bg-slate-700 p-2 md:p-3 rounded flex-1 border border-slate-600">
-                  <p className={`text-slate-300 ${isMobile ? 'text-xs' : 'text-sm'}`}>{insight}</p>
-                </div>
-              </div>
-            ))}
-            <div className="bg-slate-700 p-2 md:p-3 rounded flex-1 border border-slate-600 w-[90%]">
-              <p className={`text-slate-300 ${isMobile ? 'text-xs' : 'text-sm'}`}>Draft a follow-up email to Sarah</p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <input 
-                type="text" 
-                placeholder="Ask your AI assistant..." 
-                className="flex-1 bg-slate-700 text-white text-sm rounded py-2 px-3 border border-slate-600 focus:outline-none focus:border-slate-500"
-              />
-              <button className="text-slate-400 hover:text-slate-300">
-                <Send size={16} />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-slate-800 rounded border border-slate-700 p-3 md:p-4">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className={`text-white ${isMobile ? 'text-base' : 'text-lg'}`}>Today's Tasks</h2>
-            <button className={`bg-slate-600 text-white text-sm rounded font-medium hover:bg-slate-500 flex items-center space-x-1 ${
-              isMobile ? 'px-2 py-1' : 'px-3 py-1'
-            }`}>
-              <Plus size={12} />
-              <span>Add</span>
-            </button>
-          </div>
-          <div className="space-y-2 md:space-y-3">
-            {tasks.map((task, index) => (
-              <div key={index} className="flex items-start space-x-3 p-2 md:p-3 bg-slate-700 rounded border border-slate-600">
-                <input 
-                  type="checkbox" 
-                  className="mt-1 rounded border-slate-500 bg-slate-600" 
-                  defaultChecked={task.priority === 'Done'}
-                />
-                <div className="flex-1 min-w-0">
-                  <div className={`${task.priority === 'Done' ? 'line-through text-slate-500' : 'text-white'} ${
-                    isMobile ? 'text-xs' : 'text-sm'
-                  }`}>
-                    {task.title}
-                  </div>
-                  <div className={`text-slate-500 mt-1 ${isMobile ? 'text-xs' : 'text-xs'}`}>{task.time}</div>
-                </div>
-                <span className={`text-xs px-2 py-1 rounded text-slate-300 border border-slate-500 bg-slate-600 whitespace-nowrap`}>
-                  {task.priority}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
 
-export default DashboardPage;
+export default LeadPage;
