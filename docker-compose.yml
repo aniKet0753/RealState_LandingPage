@@ -1,0 +1,24 @@
+services:
+  backend:
+    build:
+      context: ./Backend
+    container_name: agent-backend-app
+    ports:
+      - "5002:5002"
+    env_file:
+      - ./Backend/.env
+    volumes:
+      - ./Backend:/app
+      - /app/node_modules
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5174:5174"
+    volumes:
+      - ./Frontend:/app
+      - /app/node_modules
+    
+ 
+ 
