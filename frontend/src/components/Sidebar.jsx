@@ -1,6 +1,6 @@
 import React from 'react';
-import { TrendingUp, User, Briefcase, Calendar, ClipboardList, CircleUser, Settings, HelpCircle, X } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { TrendingUp, User, Briefcase, Calendar, ClipboardList, CircleUser, Settings, HelpCircle, X, LogOut } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const menuItems = [
   { name: 'Dashboard', icon: <TrendingUp size={18} />, link: '/dashboard' },
@@ -24,8 +24,21 @@ const settingsItems = [
 
 const Sidebar = ({ isSidebarOpen, closePanels, isMobile, isTablet, toggleSidebar }) => {
   const location = useLocation(); // Get current route
+  const navigate = useNavigate(); // Hook for navigation
 
   const isActive = (path) => location.pathname.startsWith(path);
+
+  // Handle logout functionality
+  const handleLogout = () => {
+    // In a real application, you would:
+    // 1. Make an API call to the logout endpoint.
+    // 2. Clear user data from local storage, session storage, or cookies.
+    localStorage.removeItem('authToken'); 
+    localStorage.removeItem('user');
+    
+    // Redirect the user to the login page
+    navigate('/login');
+  };
 
   return (
     <div
@@ -102,6 +115,14 @@ const Sidebar = ({ isSidebarOpen, closePanels, isMobile, isTablet, toggleSidebar
               <span>{item.name}</span>
             </Link>
           ))}
+          {/* Add a logout button */}
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center space-x-3 px-3 py-2 rounded text-sm text-slate-400 hover:bg-slate-800"
+          >
+            <span><LogOut size={18} /></span>
+            <span>Log out</span>
+          </button>
         </div>
 
         <div className="mt-6 mx-3">
