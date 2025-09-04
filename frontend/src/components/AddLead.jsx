@@ -9,7 +9,7 @@ const AddLeadPage = () => {
   const [notification, setNotification] = useState({ message: '', type: '' });
   
   const [formData, setFormData] = useState({
-    user_id: localStorage.getItem('user_id') || sessionStorage.getItem('user_id'),
+    // user_id: localStorage.getItem('user_id') || sessionStorage.getItem('user_id'),
     firstName: '',
     lastName: '',
     email: '',
@@ -76,7 +76,7 @@ const AddLeadPage = () => {
 
   const buildPayload = (data) => {
     const payload = {
-      user_id: data.user_id,
+      // user_id: data.user_id,
       first_name: data.firstName,
       last_name: data.lastName,
       email: data.email,

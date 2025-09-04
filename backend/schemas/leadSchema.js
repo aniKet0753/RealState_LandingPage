@@ -1,7 +1,7 @@
 const Joi = require('joi');
 
 const addLeadSchema = Joi.object({
-  user_id: Joi.number().integer().required(),
+  // user_id: Joi.number().integer().required(),
 
   first_name: Joi.string().trim().required(),
   last_name: Joi.string().trim().required(),

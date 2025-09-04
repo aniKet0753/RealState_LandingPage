@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Filter, Download, ChevronDown, MoreHorizontal, Search, Send } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import AIAssistant from './AIAssistant'; // Import the new component
 
 const DashboardPage = ({ isMobile, isTablet, closePanels }) => {
   const statCards = [
@@ -17,12 +18,7 @@ const DashboardPage = ({ isMobile, isTablet, closePanels }) => {
     { name: 'Emily Taylor', title: 'Buyer', email: 'e.taylor@example.com', phone: '(555) 876-5432', status: 'Cold', source: 'Zillow', lastContact: 'Aug 5, 2025', avatar: 'ET' },
   ];
 
-  const aiInsights = [
-    "Good morning! Here are today's insights:",
-    "3 follow-ups scheduled for today",
-    "Sarah Johnson ready to make an offer",
-    "Market prices rising 5% in your area"
-  ];
+  // The aiInsights data has been moved to AIAssistant.jsx
 
   const tasks = [
     { title: 'Call Sarah Johnson about offer details', time: '10:30 AM', priority: 'High' },
@@ -205,39 +201,8 @@ const DashboardPage = ({ isMobile, isTablet, closePanels }) => {
       </div>
 
       <div className={`grid gap-4 md:gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
-        <div className="bg-slate-800 rounded border border-slate-700 p-3 md:p-4">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className={`text-white ${isMobile ? 'text-base' : 'text-lg'}`}>AI Assistant</h2>
-            <button className="text-slate-400 hover:text-slate-300">
-              <MoreHorizontal size={16} />
-            </button>
-          </div>
-          <div className="space-y-3 md:space-y-4">
-            {aiInsights.slice(0, isMobile ? 2 : 3).map((insight, index) => (
-              <div key={index} className="flex items-start space-x-3">
-                <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-slate-600 flex items-center justify-center text-xs text-white flex-shrink-0">
-                  AI
-                </div>
-                <div className="bg-slate-700 p-2 md:p-3 rounded flex-1 border border-slate-600">
-                  <p className={`text-slate-300 ${isMobile ? 'text-xs' : 'text-sm'}`}>{insight}</p>
-                </div>
-              </div>
-            ))}
-            <div className="bg-slate-700 p-2 md:p-3 rounded flex-1 border border-slate-600 w-[90%]">
-              <p className={`text-slate-300 ${isMobile ? 'text-xs' : 'text-sm'}`}>Draft a follow-up email to Sarah</p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <input 
-                type="text" 
-                placeholder="Ask your AI assistant..." 
-                className="flex-1 bg-slate-700 text-white text-sm rounded py-2 px-3 border border-slate-600 focus:outline-none focus:border-slate-500"
-              />
-              <button className="text-slate-400 hover:text-slate-300">
-                <Send size={16} />
-              </button>
-            </div>
-          </div>
-        </div>
+        {/* The new AIAssistant component replaces the old code block */}
+        <AIAssistant isMobile={isMobile} />
 
         <div className="bg-slate-800 rounded border border-slate-700 p-3 md:p-4">
           <div className="flex justify-between items-center mb-4">

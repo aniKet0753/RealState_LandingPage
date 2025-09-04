@@ -3,7 +3,6 @@ const supabase = require('../db/supabaseClient');
 // Add a new lead
 exports.addLead = async (req, res) => {
     const {
-        user_id,
         first_name,
         last_name,
         email,
@@ -22,11 +21,12 @@ exports.addLead = async (req, res) => {
     } = req.body;
 
     console.log(req.body);
+
     try {
         const { data, error } = await supabase
             .from('leads')
             .insert([{
-                user_id,
+                user_id: req.user.userId,
                 first_name,
                 last_name,
                 email,
