@@ -19,6 +19,14 @@ const STATES_AND_CITIES = {
   'Georgia': ['Atlanta', 'Augusta', 'Columbus', 'Savannah'],
 };
 
+// Create a reverse mapping for city-to-state lookup
+const CITIES_TO_STATES = {};
+Object.keys(STATES_AND_CITIES).forEach(state => {
+  STATES_AND_CITIES[state].forEach(city => {
+    CITIES_TO_STATES[city] = state;
+  });
+});
+
 const SignupPage = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -60,14 +68,12 @@ const SignupPage = () => {
   const [otpErrors, setOtpErrors] = useState({ email: '', phone: '' });
   const [finalSubmitError, setFinalSubmitError] = useState('');
 
-  // States for searchable dropdowns
-  const [filteredStates, setFilteredStates] = useState(Object.keys(STATES_AND_CITIES));
-  const [stateSearch, setStateSearch] = useState('');
-  const [isStateDropdownOpen, setIsStateDropdownOpen] = useState(false);
-
+  // States for searchable text fields with suggestions
+  const [citySearchInput, setCitySearchInput] = useState('');
+  const [stateSearchInput, setStateSearchInput] = useState('');
   const [filteredCities, setFilteredCities] = useState([]);
-  const [citySearch, setCitySearch] = useState('');
-  const [isCityDropdownOpen, setIsCityDropdownOpen] = useState(false);
+  const [showCitySuggestions, setShowCitySuggestions] = useState(false);
+  const [showStateSuggestions, setShowStateSuggestions] = useState(false);
 
   // Check password strength and validation rules
   const checkPasswordValidation = (password) => {
@@ -131,40 +137,54 @@ const SignupPage = () => {
     setShowPassword(!showPassword);
   };
 
-  // Handle searchable dropdown
-  const handleStateSelect = (state) => {
-    setFormData((prev) => ({ ...prev, state, city: '' }));
-    setIsStateDropdownOpen(false);
-    setFilteredCities(STATES_AND_CITIES[state] || []);
-    setCitySearch('');
-    setValidationErrors((prev) => ({ ...prev, state: '', city: '' }));
+  // New logic for typable city field with suggestions
+  const handleCitySearchChange = (e) => {
+    const { value } = e.target;
+    setCitySearchInput(value);
+    setFormData(prev => ({ ...prev, city: value, state: '' })); // Clear state when city input changes
+    if (value.length > 0) {
+      const filtered = Object.keys(CITIES_TO_STATES).filter(city =>
+        city.toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredCities(filtered);
+      setShowCitySuggestions(true);
+    } else {
+      setFilteredCities([]);
+      setShowCitySuggestions(false);
+    }
+    setValidationErrors((prev) => ({ ...prev, city: '', state: '' }));
   };
 
   const handleCitySelect = (city) => {
-    setFormData((prev) => ({ ...prev, city }));
-    setIsCityDropdownOpen(false);
-    setValidationErrors((prev) => ({ ...prev, city: '' }));
+    const state = CITIES_TO_STATES[city];
+    setFormData(prev => ({ ...prev, city, state }));
+    setCitySearchInput(city);
+    setStateSearchInput(state);
+    setShowCitySuggestions(false);
   };
 
-  // Filter states based on search input
-  useEffect(() => {
-    setFilteredStates(
-      Object.keys(STATES_AND_CITIES).filter((state) =>
-        state.toLowerCase().includes(stateSearch.toLowerCase())
-      )
-    );
-  }, [stateSearch]);
-
-  // Filter cities based on search input
-  useEffect(() => {
-    if (formData.state) {
-      setFilteredCities(
-        (STATES_AND_CITIES[formData.state] || []).filter((city) =>
-          city.toLowerCase().includes(citySearch.toLowerCase())
-        )
+  // New logic for typable state field with suggestions (can be used for manual override)
+  const handleStateSearchChange = (e) => {
+    const { value } = e.target;
+    setStateSearchInput(value);
+    if (value.length > 0) {
+      const filtered = Object.keys(STATES_AND_CITIES).filter(state =>
+        state.toLowerCase().includes(value.toLowerCase())
       );
+      setFilteredStates(filtered); // Assuming a new state for filtered states is defined
+      setShowStateSuggestions(true);
+    } else {
+      setFilteredStates([]);
+      setShowStateSuggestions(false);
     }
-  }, [citySearch, formData.state]);
+    setValidationErrors((prev) => ({ ...prev, state: '' }));
+  };
+
+  const handleStateSelect = (state) => {
+    setStateSearchInput(state);
+    setFormData(prev => ({ ...prev, state }));
+    setShowStateSuggestions(false);
+  };
 
   // Email OTP timer
   useEffect(() => {
@@ -268,7 +288,8 @@ const SignupPage = () => {
 
     handleSendOtp('email');
     // handleSendOtp('phone');
-    toast.success('OTPs are being sent to your email and phone.');
+    // toast.success('OTPs are being sent to your email and phone.');
+    toast.success('OTP is being sent to your email.');
     setShowOtpPopup(true);
   };
 
@@ -293,7 +314,7 @@ const SignupPage = () => {
     //   return;
     // }
     if (!isEmailOtpVerified ) {
-      setFinalSubmitError("Please verify both email OTP first.");
+      setFinalSubmitError("Please verify email OTP first.");
       return;
     }
     
@@ -364,50 +385,61 @@ const SignupPage = () => {
               <input type="text" name="address" value={formData.address} onChange={handleChange} className={`w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600 ${validationErrors.address ? 'border-2 border-red-500' : ''}`} placeholder="Enter your address" required/>
               {validationErrors.address && <p className="text-red-500 text-sm mt-1">{validationErrors.address}</p>}
             </div>
-            <div className="relative">
-              <label className="block text-sm text-gray-400 mb-1">State</label>
-              <div className="relative">
-                <div onClick={() => setIsStateDropdownOpen(!isStateDropdownOpen)} className={`w-full bg-[#2c2c2c] text-white rounded-md p-3 cursor-pointer flex justify-between items-center ${validationErrors.state ? 'border-2 border-red-500' : ''}`}>
-                  <span>{formData.state || 'Select your state'}</span>
-                  <FaChevronDown className="text-gray-400" />
-                </div>
-                {isStateDropdownOpen && (
-                  <div className="absolute z-10 w-full mt-2 bg-[#2c2c2c] rounded-md shadow-lg max-h-48 overflow-y-auto custom-scrollbar">
-                    <div className="relative p-2">
-                      <input type="text" value={stateSearch} onChange={(e) => setStateSearch(e.target.value)} placeholder="Search state..." className="w-full bg-[#3c3c3c] text-white rounded-md p-2 focus:outline-none" />
-                    </div>
-                    {filteredStates.map((state) => (
-                      <div key={state} onClick={() => handleStateSelect(state)} className="p-2 cursor-pointer hover:bg-[#3c3c3c]">
-                        {state}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-              {validationErrors.state && <p className="text-red-500 text-sm mt-1">{validationErrors.state}</p>}
-            </div>
+
+            {/* Change: City field comes first with typable suggestions */}
             <div className="relative">
               <label className="block text-sm text-gray-400 mb-1">City</label>
-              <div className="relative">
-                <div onClick={() => { if (formData.state) setIsCityDropdownOpen(!isCityDropdownOpen) }} className={`w-full bg-[#2c2c2c] text-white rounded-md p-3 cursor-pointer flex justify-between items-center ${!formData.state ? 'opacity-50' : ''} ${validationErrors.city ? 'border-2 border-red-500' : ''}`}>
-                  <span>{formData.city || 'Select your city'}</span>
-                  <FaChevronDown className="text-gray-400" />
-                </div>
-                {isCityDropdownOpen && (
-                  <div className="absolute z-10 w-full mt-2 bg-[#2c2c2c] rounded-md shadow-lg max-h-48 overflow-y-auto custom-scrollbar">
-                    <div className="relative p-2">
-                      <input type="text" value={citySearch} onChange={(e) => setCitySearch(e.target.value)} placeholder="Search city..." className="w-full bg-[#3c3c3c] text-white rounded-md p-2 focus:outline-none" />
+              <input
+                type="text"
+                name="city"
+                value={citySearchInput}
+                onChange={handleCitySearchChange}
+                onFocus={() => setShowCitySuggestions(true)}
+                onBlur={() => setTimeout(() => setShowCitySuggestions(false), 200)} // Delay to allow click
+                className={`w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600 ${validationErrors.city ? 'border-2 border-red-500' : ''}`}
+                placeholder="Start typing your city..."
+                autoComplete="off"
+              />
+              {showCitySuggestions && filteredCities.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-[#2c2c2c] rounded-md shadow-lg max-h-48 overflow-y-auto custom-scrollbar">
+                  {filteredCities.map((city) => (
+                    <div key={city} onMouseDown={() => handleCitySelect(city)} className="p-2 cursor-pointer hover:bg-[#3c3c3c]">
+                      {city}
                     </div>
-                    {filteredCities.map((city) => (
-                      <div key={city} onClick={() => handleCitySelect(city)} className="p-2 cursor-pointer hover:bg-[#3c3c3c]">
-                        {city}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+                  ))}
+                </div>
+              )}
               {validationErrors.city && <p className="text-red-500 text-sm mt-1">{validationErrors.city}</p>}
             </div>
+
+            {/* Change: State field is now read-only and populated based on city selection */}
+            <div className="relative">
+              <label className="block text-sm text-gray-400 mb-1">State</label>
+              <input
+                type="text"
+                name="state"
+                value={stateSearchInput}
+                onChange={handleStateSearchChange}
+                onFocus={() => setShowStateSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowStateSuggestions(false), 200)}
+                className={`w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600 ${validationErrors.state ? 'border-2 border-red-500' : ''}`}
+                placeholder="State will be auto-filled"
+                readOnly={!!formData.city} // Make it read-only if a city is selected
+                autoComplete="off"
+                disabled
+              />
+              {showStateSuggestions && filteredStates.length > 0 && !formData.city && ( // Show only if a city is not selected
+                <div className="absolute z-10 w-full mt-1 bg-[#2c2c2c] rounded-md shadow-lg max-h-48 overflow-y-auto custom-scrollbar">
+                  {filteredStates.map((state) => (
+                    <div key={state} onMouseDown={() => handleStateSelect(state)} className="p-2 cursor-pointer hover:bg-[#3c3c3c]">
+                      {state}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {validationErrors.state && <p className="text-red-500 text-sm mt-1">{validationErrors.state}</p>}
+            </div>
+            
             <div className="col-span-1 md:col-span-1">
               <label className="block text-sm text-gray-400 mb-1">Password</label>
               <div className="relative">
@@ -568,7 +600,8 @@ const SignupPage = () => {
             </button>
             <h3 className="text-xl font-semibold text-center mb-4">Verify Your Account</h3>
             <p className="text-gray-400 text-sm text-center mb-6">
-              An OTP has been sent to your email and phone number.
+              {/* An OTP has been sent to your email and phone number. */}
+              An OTP has been sent to your email.
             </p>
 
             {/* Email OTP Section */}
