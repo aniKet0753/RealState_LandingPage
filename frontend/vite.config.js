@@ -7,5 +7,9 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     port: 5174, // 👈 Change port here
+    allowedHosts: [
+      'agentsuit.itrix.biz',  // ✅ Add your main domain
+      'api.agentsuit.itrix.biz' // ✅ Add your API subdomain if needed
+    ]
   },
 })
