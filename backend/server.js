@@ -12,7 +12,7 @@ app.use('/api/agents', agentRoutes);
 
 app.use('/api/leads', leadRoutes);
 app.use('/api/otp', require('./routes/otpRoutes'));
-app.use('/api/ai-assistant', require('./routes/aiLeads'));
+app.use('/api/ai-assistant', require('./routes/AILeads'));
 
 app.get('/', (req, res) => {
     res.send('AgentSuit Backend API is working!');

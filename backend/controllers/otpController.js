@@ -68,7 +68,7 @@ exports.sendOTP = async (req, res) => {
             upperCaseAlphabets: false,
             specialChars: false
         });
-        const expirationTime = Date.now() + 30 * 1000; // OTP expires in 30 seconds
+        const expirationTime = Date.now() + 5 * 60 * 1000; // OTP expires in 5 minutes
 
         // Store the OTP in memory
         otpStore[identifier] = {
@@ -82,12 +82,12 @@ exports.sendOTP = async (req, res) => {
                 from: process.env.EMAIL_USER,
                 to: identifier,
                 subject: 'Your Agentsuit OTP',
-                html: `<p>Your one-time password (OTP) is: <strong>${newOtp}</strong>. It expires in 30 seconds.</p>`,
+                html: `<p>Your Verification code is: <strong>${newOtp}</strong>. It expires in 5 minutes.</p>`,
             };
             await transporter.sendMail(mailOptions);
         } else if (type === 'phone_number') {
             await twilioClient.messages.create({
-                body: `Your Agentsuit OTP is: ${newOtp}. It expires in 30 seconds.`,
+                body: `Your Agentsuit OTP is: ${newOtp}. It expires in 5 minutes.`,
                 from: process.env.TWILIO_PHONE_NUMBER,
                 to: `+1${identifier}`,
             });
@@ -122,6 +122,7 @@ exports.verifyOTP = async (req, res) => {
     }
 
     // Validate the OTP
+    console.log(storedOtp.otp, otp);
     if (storedOtp.otp !== otp) {
         return res.status(400).json({ error: 'Invalid OTP.' });
     }

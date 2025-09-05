@@ -6,6 +6,7 @@ import DashboardPage from './components/Dashboard.jsx';
 import AddLeadPage from './components/AddLead.jsx';
 import LeadPage from './components/Lead.jsx';
 import Layout from './components/Layout.jsx';
+import AddBulkLeadPage from './components/AddBulkLead.jsx';
 
 // Helper component for private routes
 const ProtectedRoute = ({ children, isAuthenticated }) => {
@@ -38,6 +39,7 @@ const App = () => {
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="leads" element={<LeadPage />} />
             <Route path="add-lead" element={<AddLeadPage />} />
+            <Route path="add-bulk-lead" element={<AddBulkLeadPage />} />
           </Route>
 
           {/* Catch-all route for unmatched paths */}

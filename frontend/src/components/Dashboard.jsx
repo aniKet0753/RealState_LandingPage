@@ -73,8 +73,47 @@ const DashboardPage = ({ isMobile, isTablet, closePanels }) => {
           </div>
         ))}
       </div>
+      
+        <div className={`grid gap-4 md:gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
+        {/* The new AIAssistant component replaces the old code block */}
+        <AIAssistant isMobile={isMobile} />
 
-      <div className="bg-slate-800 rounded border border-slate-700 p-3 md:p-4 mb-4 md:mb-6">
+        <div className="bg-slate-800 rounded border border-slate-700 p-3 md:p-4">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className={`text-white ${isMobile ? 'text-base' : 'text-lg'}`}>Today's Tasks</h2>
+            <button className={`bg-slate-600 text-white text-sm rounded font-medium hover:bg-slate-500 flex items-center space-x-1 ${
+              isMobile ? 'px-2 py-1' : 'px-3 py-1'
+            }`}>
+              <Plus size={12} />
+              <span>Add</span>
+            </button>
+          </div>
+          <div className="space-y-2 md:space-y-3">
+            {tasks.map((task, index) => (
+              <div key={index} className="flex items-start space-x-3 p-2 md:p-3 bg-slate-700 rounded border border-slate-600">
+                <input 
+                  type="checkbox" 
+                  className="mt-1 rounded border-slate-500 bg-slate-600" 
+                  defaultChecked={task.priority === 'Done'}
+                />
+                <div className="flex-1 min-w-0">
+                  <div className={`${task.priority === 'Done' ? 'line-through text-slate-500' : 'text-white'} ${
+                    isMobile ? 'text-xs' : 'text-sm'
+                  }`}>
+                    {task.title}
+                  </div>
+                  <div className={`text-slate-500 mt-1 ${isMobile ? 'text-xs' : 'text-xs'}`}>{task.time}</div>
+                </div>
+                <span className={`text-xs px-2 py-1 rounded text-slate-300 border border-slate-500 bg-slate-600 whitespace-nowrap`}>
+                  {task.priority}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-9 bg-slate-800 rounded border border-slate-700 p-3 md:p-4 mb-4 md:mb-6">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 space-y-3 md:space-y-0">
           <h2 className={`text-white ${isMobile ? 'text-base' : 'text-lg'}`}>Lead Overview</h2>
           <div className="relative">
@@ -200,44 +239,7 @@ const DashboardPage = ({ isMobile, isTablet, closePanels }) => {
         </div>
       </div>
 
-      <div className={`grid gap-4 md:gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
-        {/* The new AIAssistant component replaces the old code block */}
-        <AIAssistant isMobile={isMobile} />
-
-        <div className="bg-slate-800 rounded border border-slate-700 p-3 md:p-4">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className={`text-white ${isMobile ? 'text-base' : 'text-lg'}`}>Today's Tasks</h2>
-            <button className={`bg-slate-600 text-white text-sm rounded font-medium hover:bg-slate-500 flex items-center space-x-1 ${
-              isMobile ? 'px-2 py-1' : 'px-3 py-1'
-            }`}>
-              <Plus size={12} />
-              <span>Add</span>
-            </button>
-          </div>
-          <div className="space-y-2 md:space-y-3">
-            {tasks.map((task, index) => (
-              <div key={index} className="flex items-start space-x-3 p-2 md:p-3 bg-slate-700 rounded border border-slate-600">
-                <input 
-                  type="checkbox" 
-                  className="mt-1 rounded border-slate-500 bg-slate-600" 
-                  defaultChecked={task.priority === 'Done'}
-                />
-                <div className="flex-1 min-w-0">
-                  <div className={`${task.priority === 'Done' ? 'line-through text-slate-500' : 'text-white'} ${
-                    isMobile ? 'text-xs' : 'text-sm'
-                  }`}>
-                    {task.title}
-                  </div>
-                  <div className={`text-slate-500 mt-1 ${isMobile ? 'text-xs' : 'text-xs'}`}>{task.time}</div>
-                </div>
-                <span className={`text-xs px-2 py-1 rounded text-slate-300 border border-slate-500 bg-slate-600 whitespace-nowrap`}>
-                  {task.priority}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      
     </div>
   );
 };

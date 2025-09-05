@@ -1,31 +1,160 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../api';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaEye, FaEyeSlash, FaShieldAlt, FaPlusCircle, FaHeadset, FaSearch, FaChevronDown, FaCheckCircle, FaExclamationCircle, FaTimes } from 'react-icons/fa';
 
-// Hardcoded state and city data for the searchable dropdown
-const STATES_AND_CITIES = {
-  'California': ['Los Angeles', 'San Francisco', 'San Diego', 'Sacramento'],
-  'New York': ['New York City', 'Buffalo', 'Rochester', 'Albany'],
-  'Texas': ['Houston', 'Dallas', 'Austin', 'San Antonio'],
-  'Florida': ['Miami', 'Orlando', 'Tampa', 'Jacksonville'],
-  'Illinois': ['Chicago', 'Springfield', 'Peoria', 'Rockford'],
-  'Washington': ['Seattle', 'Spokane', 'Tacoma', 'Vancouver'],
-  'Arizona': ['Phoenix', 'Tucson', 'Mesa', 'Chandler'],
-  'Colorado': ['Denver', 'Colorado Springs', 'Aurora', 'Fort Collins'],
-  'Massachusetts': ['Boston', 'Worcester', 'Springfield', 'Cambridge'],
-  'Georgia': ['Atlanta', 'Augusta', 'Columbus', 'Savannah'],
-};
-
-// Create a reverse mapping for city-to-state lookup
-const CITIES_TO_STATES = {};
-Object.keys(STATES_AND_CITIES).forEach(state => {
-  STATES_AND_CITIES[state].forEach(city => {
-    CITIES_TO_STATES[city] = state;
-  });
-});
+// Hardcoded list of cities and states
+const US_CITIES_STATES = [
+  { city: 'New York', state: 'New York' },
+  { city: 'Los Angeles', state: 'California' },
+  { city: 'Chicago', state: 'Illinois' },
+  { city: 'Houston', state: 'Texas' },
+  { city: 'Phoenix', state: 'Arizona' },
+  { city: 'Philadelphia', state: 'Pennsylvania' },
+  { city: 'San Antonio', state: 'Texas' },
+  { city: 'San Diego', state: 'California' },
+  { city: 'Dallas', state: 'Texas' },
+  { city: 'San Jose', state: 'California' },
+  { city: 'Austin', state: 'Texas' },
+  { city: 'Jacksonville', state: 'Florida' },
+  { city: 'Fort Worth', state: 'Texas' },
+  { city: 'Columbus', state: 'Ohio' },
+  { city: 'Charlotte', state: 'North Carolina' },
+  { city: 'Indianapolis', state: 'Indiana' },
+  { city: 'San Francisco', state: 'California' },
+  { city: 'Seattle', state: 'Washington' },
+  { city: 'Denver', state: 'Colorado' },
+  { city: 'Washington', state: 'District of Columbia' },
+  { city: 'Boston', state: 'Massachusetts' },
+  { city: 'Atlanta', state: 'Georgia' },
+  { city: 'Miami', state: 'Florida' },
+  { city: 'Las Vegas', state: 'Nevada' },
+  { city: 'Portland', state: 'Oregon' },
+  { city: 'Detroit', state: 'Michigan' },
+  { city: 'Nashville', state: 'Tennessee' },
+  { city: 'Memphis', state: 'Tennessee' },
+  { city: 'Louisville', state: 'Kentucky' },
+  { city: 'Baltimore', state: 'Maryland' },
+  { city: 'Milwaukee', state: 'Wisconsin' },
+  { city: 'Oklahoma City', state: 'Oklahoma' },
+  { city: 'Tucson', state: 'Arizona' },
+  { city: 'Fresno', state: 'California' },
+  { city: 'Sacramento', state: 'California' },
+  { city: 'Kansas City', state: 'Missouri' },
+  { city: 'Long Beach', state: 'California' },
+  { city: 'Mesa', state: 'Arizona' },
+  { city: 'Virginia Beach', state: 'Virginia' },
+  { city: 'Omaha', state: 'Nebraska' },
+  { city: 'Raleigh', state: 'North Carolina' },
+  { city: 'Colorado Springs', state: 'Colorado' },
+  { city: 'Oakland', state: 'California' },
+  { city: 'Minneapolis', state: 'Minnesota' },
+  { city: 'Tulsa', state: 'Oklahoma' },
+  { city: 'Arlington', state: 'Texas' },
+  { city: 'Wichita', state: 'Kansas' },
+  { city: 'New Orleans', state: 'Louisiana' },
+  { city: 'Cleveland', state: 'Ohio' },
+  { city: 'Honolulu', state: 'Hawaii' },
+  { city: 'Tampa', state: 'Florida' },
+  { city: 'Bakersfield', state: 'California' },
+  { city: 'Aurora', state: 'Colorado' },
+  { city: 'Anaheim', state: 'California' },
+  { city: 'Santa Ana', state: 'California' },
+  { city: 'Corpus Christi', state: 'Texas' },
+  { city: 'Riverside', state: 'California' },
+  { city: 'Lexington', state: 'Kentucky' },
+  { city: 'Stockton', state: 'California' },
+  { city: 'Henderson', state: 'Nevada' },
+  { city: 'Saint Paul', state: 'Minnesota' },
+  { city: 'St. Louis', state: 'Missouri' },
+  { city: 'Cincinnati', state: 'Ohio' },
+  { city: 'Pittsburgh', state: 'Pennsylvania' },
+  { city: 'Greensboro', state: 'North Carolina' },
+  { city: 'Anchorage', state: 'Alaska' },
+  { city: 'Plano', state: 'Texas' },
+  { city: 'Lincoln', state: 'Nebraska' },
+  { city: 'Orlando', state: 'Florida' },
+  { city: 'Irvine', state: 'California' },
+  { city: 'Newark', state: 'New Jersey' },
+  { city: 'Toledo', state: 'Ohio' },
+  { city: 'Durham', state: 'North Carolina' },
+  { city: 'Chula Vista', state: 'California' },
+  { city: 'Fort Wayne', state: 'Indiana' },
+  { city: 'Jersey City', state: 'New Jersey' },
+  { city: 'Chandler', state: 'Arizona' },
+  { city: 'Madison', state: 'Wisconsin' },
+  { city: 'Lubbock', state: 'Texas' },
+  { city: 'Scottsdale', state: 'Arizona' },
+  { city: 'Reno', state: 'Nevada' },
+  { city: 'Buffalo', state: 'New York' },
+  { city: 'Gilbert', state: 'Arizona' },
+  { city: 'Glendale', state: 'California' },
+  { city: 'North Las Vegas', state: 'Nevada' },
+  { city: 'Winston-Salem', state: 'North Carolina' },
+  { city: 'Chesapeake', state: 'Virginia' },
+  { city: 'Norfolk', state: 'Virginia' },
+  { city: 'Fremont', state: 'California' },
+  { city: 'Garland', state: 'Texas' },
+  { city: 'Irving', state: 'Texas' },
+  { city: 'Hialeah', state: 'Florida' },
+  { city: 'Richmond', state: 'Virginia' },
+  { city: 'Boise', state: 'Idaho' },
+  { city: 'Spokane', state: 'Washington' },
+  { city: 'Des Moines', state: 'Iowa' },
+  { city: 'Modesto', state: 'California' },
+  { city: 'Birmingham', state: 'Alabama' },
+  { city: 'Tacoma', state: 'Washington' },
+  { city: 'Fontana', state: 'California' },
+  { city: 'Oxnard', state: 'California' },
+  { city: 'Moreno Valley', state: 'California' },
+  { city: 'Glendale', state: 'Arizona' },
+  { city: 'Yonkers', state: 'New York' },
+  { city: 'Huntington Beach', state: 'California' },
+  { city: 'Montgomery', state: 'Alabama' },
+  { city: 'Amarillo', state: 'Texas' },
+  { city: 'Akron', state: 'Ohio' },
+  { city: 'Little Rock', state: 'Arkansas' },
+  { city: 'Augusta', state: 'Georgia' },
+  { city: 'Grand Rapids', state: 'Michigan' },
+  { city: 'Shreveport', state: 'Louisiana' },
+  { city: 'Columbia', state: 'South Carolina' },
+  { city: 'Overland Park', state: 'Kansas' },
+  { city: 'Knoxville', state: 'Tennessee' },
+  { city: 'Tempe', state: 'Arizona' },
+  { city: 'Waterbury', state: 'Connecticut' },
+  { city: 'Manchester', state: 'New Hampshire' },
+  { city: 'Huntsville', state: 'Alabama' },
+  { city: 'Salt Lake City', state: 'Utah' },
+  { city: 'Newport News', state: 'Virginia' },
+  { city: 'Cape Coral', state: 'Florida' },
+  { city: 'Peoria', state: 'Arizona' },
+  { city: 'Sioux Falls', state: 'South Dakota' },
+  { city: 'Springfield', state: 'Missouri' },
+  { city: 'Eugene', state: 'Oregon' },
+  { city: 'Harrisburg', state: 'Pennsylvania' },
+  { city: 'Charleston', state: 'South Carolina' },
+  { city: 'Gainesville', state: 'Florida' },
+  { city: 'Chattanooga', state: 'Tennessee' },
+  { city: 'Bismarck', state: 'North Dakota' },
+  { city: 'Cheyenne', state: 'Wyoming' },
+  { city: 'Billings', state: 'Montana' },
+  { city: 'Rapid City', state: 'South Dakota' },
+  { city: 'Bismarck', state: 'North Dakota' },
+  { city: 'Pierre', state: 'South Dakota' },
+  { city: 'Frankfort', state: 'Kentucky' },
+  { city: 'Montpelier', state: 'Vermont' },
+  { city: 'Concord', state: 'New Hampshire' },
+  { city: 'Jefferson City', state: 'Missouri' },
+  { city: 'Lansing', state: 'Michigan' },
+  { city: 'Trenton', state: 'New Jersey' },
+  { city: 'Providence', state: 'Rhode Island' },
+  { city: 'Montpelier', state: 'Vermont' },
+  { city: 'Charleston', state: 'West Virginia' },
+  { city: 'Madison', state: 'Wisconsin' },
+ 
+]
 
 const SignupPage = () => {
   const navigate = useNavigate();
@@ -58,7 +187,8 @@ const SignupPage = () => {
 
   // OTP state
   const [showOtpPopup, setShowOtpPopup] = useState(false);
-  const [otp, setOtp] = useState({ email: '', phone: '' });
+  const [emailCode, setEmailCode] = useState(['', '', '', '', '', '']);
+  const inputRefs = useRef([]);
   const [isEmailOtpVerified, setIsEmailOtpVerified] = useState(false);
   const [isPhoneOtpVerified, setIsPhoneOtpVerified] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
@@ -70,11 +200,9 @@ const SignupPage = () => {
 
   // States for searchable text fields with suggestions
   const [citySearchInput, setCitySearchInput] = useState('');
-  const [stateSearchInput, setStateSearchInput] = useState('');
-  const [filteredCities, setFilteredCities] = useState([]);
-  const [showCitySuggestions, setShowCitySuggestions] = useState(false);
-  const [showStateSuggestions, setShowStateSuggestions] = useState(false);
-
+  const [filteredLocations, setFilteredLocations] = useState([]);
+  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
+  
   // Check password strength and validation rules
   const checkPasswordValidation = (password) => {
     const rules = {
@@ -137,56 +265,31 @@ const SignupPage = () => {
     setShowPassword(!showPassword);
   };
 
-  // New logic for typable city field with suggestions
   const handleCitySearchChange = (e) => {
     const { value } = e.target;
     setCitySearchInput(value);
-    setFormData(prev => ({ ...prev, city: value, state: '' })); // Clear state when city input changes
-    if (value.length > 0) {
-      const filtered = Object.keys(CITIES_TO_STATES).filter(city =>
-        city.toLowerCase().includes(value.toLowerCase())
+    
+    if (value.length > 1) {
+      const filtered = US_CITIES_STATES.filter(location =>
+        location.city.toLowerCase().includes(value.toLowerCase()) || 
+        location.state.toLowerCase().includes(value.toLowerCase())
       );
-      setFilteredCities(filtered);
-      setShowCitySuggestions(true);
+      setFilteredLocations(filtered);
+      setShowLocationSuggestions(true);
     } else {
-      setFilteredCities([]);
-      setShowCitySuggestions(false);
+      setFilteredLocations([]);
+      setShowLocationSuggestions(false);
     }
     setValidationErrors((prev) => ({ ...prev, city: '', state: '' }));
   };
 
-  const handleCitySelect = (city) => {
-    const state = CITIES_TO_STATES[city];
+  const handleCitySelect = (city, state) => {
     setFormData(prev => ({ ...prev, city, state }));
     setCitySearchInput(city);
-    setStateSearchInput(state);
-    setShowCitySuggestions(false);
+    setShowLocationSuggestions(false);
   };
 
-  // New logic for typable state field with suggestions (can be used for manual override)
-  const handleStateSearchChange = (e) => {
-    const { value } = e.target;
-    setStateSearchInput(value);
-    if (value.length > 0) {
-      const filtered = Object.keys(STATES_AND_CITIES).filter(state =>
-        state.toLowerCase().includes(value.toLowerCase())
-      );
-      setFilteredStates(filtered); // Assuming a new state for filtered states is defined
-      setShowStateSuggestions(true);
-    } else {
-      setFilteredStates([]);
-      setShowStateSuggestions(false);
-    }
-    setValidationErrors((prev) => ({ ...prev, state: '' }));
-  };
-
-  const handleStateSelect = (state) => {
-    setStateSearchInput(state);
-    setFormData(prev => ({ ...prev, state }));
-    setShowStateSuggestions(false);
-  };
-
-  // Email OTP timer
+  // Email verification code timer
   useEffect(() => {
     if (emailTimer > 0) {
       const timerId = setInterval(() => {
@@ -196,7 +299,7 @@ const SignupPage = () => {
     }
   }, [emailTimer]);
 
-  // Phone OTP timer
+  // Phone verification code timer
   useEffect(() => {
     if (phoneTimer > 0) {
       const timerId = setInterval(() => {
@@ -212,15 +315,15 @@ const SignupPage = () => {
     try {
       if (type === 'email') {
         await axios.post('/api/otp/send-otp', { identifier: formData.email , type: 'email'});
-        toast.success('Email OTP sent.');
+        toast.success('Email verification code sent.');
         setEmailTimer(30);
       } else if (type === 'phone') {
         await axios.post('/api/otp/send-otp', { identifier: formData.phone_number, type: 'phone_number' });
-        toast.success('Phone OTP sent.');
+        toast.success('Phone verification code sent.');
         setPhoneTimer(30);
       }
     } catch (err) {
-      console.error(`Failed to send ${type} OTP:`, err);
+      console.error(`Failed to send ${type} verification code:`, err);
       // Set inline error instead of a toast
       setOtpErrors(prev => ({ ...prev, [type]: `${err.response.data.error}` }));
     } finally {
@@ -228,28 +331,42 @@ const SignupPage = () => {
     }
   };
 
-  const handleVerifyOtp = async (type) => {
+  const handleVerifyOtp = async (type, codeArray = null) => {
     setIsVerifyingOtp(true);
     setOtpErrors({ email: '', phone: '' });
-    try {
-      const payload = type === 'email' ? { identifier: formData.email, otp: otp.email } : { identifier: formData.phone_number, otp: otp.phone };
-      await axios.post('/api/otp/verify-otp', payload);
 
-      if (type === 'email') {
-        setIsEmailOtpVerified(true);
-        toast.success('Email OTP verified!');
-      } else {
-        setIsPhoneOtpVerified(true);
-        toast.success('Phone OTP verified!');
-      }
+    try {
+        const code = codeArray || (type === 'email' ? emailCode : null);
+
+        if (code.some(digit => digit === '')) {
+            setOtpErrors(prev => ({ ...prev, [type]: 'Please enter all 6 digits.' }));
+            return;
+        }
+
+        const verificationCode = code.join('');
+        console.log('Verifying code:', verificationCode);
+
+        const payload = { 
+            identifier: type === 'email' ? formData.email : formData.phone_number, 
+            otp: verificationCode 
+        };
+        await axios.post('/api/otp/verify-otp', payload);
+
+        if (type === 'email') {
+            setIsEmailOtpVerified(true);
+            toast.success('Email verification code verified!');
+        } else {
+            setIsPhoneOtpVerified(true);
+            toast.success('Phone verification code verified!');
+        }
+
     } catch (err) {
-      console.error(`OTP verification failed for ${type}:`, err);
-      // Set inline error for the specific OTP field
-      setOtpErrors(prev => ({ ...prev, [type]: `Invalid ${type} OTP. Please try again.` }));
+        console.error(`Verification failed for ${type}:`, err);
+        setOtpErrors(prev => ({ ...prev, [type]: `Invalid verification code. Please try again.` }));
     } finally {
-      setIsVerifyingOtp(false);
+        setIsVerifyingOtp(false);
     }
-  };
+};
 
   const handleOpenOtpModal = (e) => {
     e.preventDefault();
@@ -287,18 +404,13 @@ const SignupPage = () => {
     }
 
     handleSendOtp('email');
-    // handleSendOtp('phone');
-    // toast.success('OTPs are being sent to your email and phone.');
-    toast.success('OTP is being sent to your email.');
     setShowOtpPopup(true);
   };
 
   const handleCloseOtpModal = () => {
     setShowOtpPopup(false);
-    // Optionally reset OTP states if the user closes the modal
-    setOtp({ email: '', phone: '' });
+    setEmailCode(['', '', '', '', '', '']);
     setIsEmailOtpVerified(false);
-    setIsPhoneOtpVerified(false);
     setOtpErrors({ email: '', phone: '' });
     setFinalSubmitError('');
     setEmailTimer(0);
@@ -306,44 +418,58 @@ const SignupPage = () => {
   };
   
   const handleFinalSubmit = async (e) => {
-    e.preventDefault();
-    setFinalSubmitError(''); // Clear any previous error message
+  e.preventDefault();
+  setFinalSubmitError('');
 
-    // if (!isEmailOtpVerified || !isPhoneOtpVerified) {
-    // setFinalSubmitError("Please verify both email and phone OTPs first.");
-    //   return;
-    // }
-    if (!isEmailOtpVerified ) {
-      setFinalSubmitError("Please verify email OTP first.");
-      return;
+  if (!isEmailOtpVerified) {
+    setFinalSubmitError("Please verify email verification code first.");
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    const { confirmPassword, terms, communications, ...payload } = formData;
+
+    const response = await axios.post('/api/agents/signup', payload);
+
+    toast.success('Successfully registered your account!', { autoClose: 3000 });
+
+    setTimeout(() => navigate('/login'), 4000);
+
+  } catch (err) {
+    console.error('Registration failed:', err);
+    setFinalSubmitError(`Registration failed: ${err.response?.data?.error || 'An unknown error occurred.'}`);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+  const handleCodeChange = (e, index) => {
+    const { value } = e.target;
+    const newCode = [...emailCode];
+    newCode[index] = value.slice(-1);
+    setEmailCode(newCode);
+
+    if (value && index < 5) {
+        inputRefs.current[index + 1].focus();
     }
-    
-    // Main form submission logic
-    setIsLoading(true);
-    try {
-        // Here, payload will contain everything from formData except the excluded fields[confirmPassword, terms,communications ].
-        const { confirmPassword, terms, communications, ...payload } = formData;
 
-        const response = await axios.post('/api/agents/signup', payload);
+    // Verify whenever all 6 digits are complete, regardless of which box was last edited
+    if (newCode.every(digit => digit)) {
+        handleVerifyOtp('email', newCode);
+    }
+  };
 
-        console.log('Signup successful:', response.data);
-        toast.success('Signup successful! Redirecting to login...', { autoClose: 2000 });
-        setTimeout(() => navigate('/login'), 2000);
 
-    } catch (err) {
-        console.error('Signup failed:', err);
-        setFinalSubmitError(`Signup failed: ${err.response?.data?.error || 'An unknown error occurred.'}`);
-    } finally {
-        setIsLoading(false);
-        // setShowOtpPopup(false); // Do not close modal on error, let the user try again
+  const handleCodeKeyDown = (e, index) => {
+    if (e.key === 'Backspace' && !emailCode[index] && index > 0) {
+      inputRefs.current[index - 1].focus();
     }
   };
 
   return (
     <div className={`flex flex-col items-center justify-center bg-[#121212] text-white font-sans ${showOtpPopup ? 'filter backdrop-blur-sm' : ''}`}>
-      {/* This is the change. We add a style prop to set the zIndex to a high value.
-        This ensures the toasts appear on top of all other elements, including pop-ups.
-      */}
       <ToastContainer style={{ zIndex: 9999 }} />
       <div className="flex flex-col items-center p-4 w-full h-full justify-center">
         <h1 className="text-4xl font-bold mb-10">
@@ -386,25 +512,33 @@ const SignupPage = () => {
               {validationErrors.address && <p className="text-red-500 text-sm mt-1">{validationErrors.address}</p>}
             </div>
 
-            {/* Change: City field comes first with typable suggestions */}
             <div className="relative">
               <label className="block text-sm text-gray-400 mb-1">City</label>
-              <input
-                type="text"
-                name="city"
-                value={citySearchInput}
-                onChange={handleCitySearchChange}
-                onFocus={() => setShowCitySuggestions(true)}
-                onBlur={() => setTimeout(() => setShowCitySuggestions(false), 200)} // Delay to allow click
-                className={`w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600 ${validationErrors.city ? 'border-2 border-red-500' : ''}`}
-                placeholder="Start typing your city..."
-                autoComplete="off"
-              />
-              {showCitySuggestions && filteredCities.length > 0 && (
+              <div className="relative">
+                <input
+                  type="text"
+                  name="city"
+                  value={citySearchInput}
+                  onChange={handleCitySearchChange}
+                  onFocus={() => setShowLocationSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowLocationSuggestions(false), 200)}
+                  className={`w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600 ${validationErrors.city ? 'border-2 border-red-500' : ''}`}
+                  placeholder=""
+                  autoComplete="off"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                  <FaChevronDown className="w-4 h-4" />
+                </span>
+              </div>
+              {showLocationSuggestions && filteredLocations.length > 0 && (
                 <div className="absolute z-10 w-full mt-1 bg-[#2c2c2c] rounded-md shadow-lg max-h-48 overflow-y-auto custom-scrollbar">
-                  {filteredCities.map((city) => (
-                    <div key={city} onMouseDown={() => handleCitySelect(city)} className="p-2 cursor-pointer hover:bg-[#3c3c3c]">
-                      {city}
+                  {filteredLocations.map((item, index) => (
+                    <div 
+                      key={index} 
+                      onMouseDown={() => handleCitySelect(item.city, item.state)} 
+                      className="p-2 cursor-pointer hover:bg-[#3c3c3c]"
+                    >
+                      {item.city}, {item.state}
                     </div>
                   ))}
                 </div>
@@ -412,31 +546,17 @@ const SignupPage = () => {
               {validationErrors.city && <p className="text-red-500 text-sm mt-1">{validationErrors.city}</p>}
             </div>
 
-            {/* Change: State field is now read-only and populated based on city selection */}
             <div className="relative">
               <label className="block text-sm text-gray-400 mb-1">State</label>
               <input
                 type="text"
                 name="state"
-                value={stateSearchInput}
-                onChange={handleStateSearchChange}
-                onFocus={() => setShowStateSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowStateSuggestions(false), 200)}
+                value={formData.state}
                 className={`w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600 ${validationErrors.state ? 'border-2 border-red-500' : ''}`}
-                placeholder="State will be auto-filled"
-                readOnly={!!formData.city} // Make it read-only if a city is selected
-                autoComplete="off"
+                placeholder=""
+                readOnly
                 disabled
               />
-              {showStateSuggestions && filteredStates.length > 0 && !formData.city && ( // Show only if a city is not selected
-                <div className="absolute z-10 w-full mt-1 bg-[#2c2c2c] rounded-md shadow-lg max-h-48 overflow-y-auto custom-scrollbar">
-                  {filteredStates.map((state) => (
-                    <div key={state} onMouseDown={() => handleStateSelect(state)} className="p-2 cursor-pointer hover:bg-[#3c3c3c]">
-                      {state}
-                    </div>
-                  ))}
-                </div>
-              )}
               {validationErrors.state && <p className="text-red-500 text-sm mt-1">{validationErrors.state}</p>}
             </div>
             
@@ -600,38 +720,29 @@ const SignupPage = () => {
             </button>
             <h3 className="text-xl font-semibold text-center mb-4">Verify Your Account</h3>
             <p className="text-gray-400 text-sm text-center mb-6">
-              {/* An OTP has been sent to your email and phone number. */}
-              An OTP has been sent to your email.
+              A verification code has been sent to your email.
             </p>
 
-            {/* Email OTP Section */}
             <div className="space-y-4 mb-6">
-              <label className="block text-sm text-gray-400">Email OTP</label>
-              <div className="relative flex items-center">
-                <input
-                  type="text"
-                  value={otp.email}
-                  onChange={(e) => setOtp({ ...otp, email: e.target.value })}
-                  className={`w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600 ${isEmailOtpVerified ? 'bg-green-600' : ''}`}
-                  placeholder="Enter Email OTP"
-                  maxLength="6"
-                  disabled={isEmailOtpVerified}
-                />
-                {isEmailOtpVerified ? (
-                  <FaCheckCircle className="absolute right-3 text-green-500" size={20} />
-                ) : (
-                  <button
-                    onClick={() => handleVerifyOtp('email')}
-                    disabled={isVerifyingOtp}
-                    className="ml-2 bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Verify
-                  </button>
-                )}
+              <label className="block text-sm text-gray-400">Email Verification Code</label>
+              <div className="flex justify-between space-x-2">
+                {Array(6).fill(null).map((_, index) => (
+                  <input
+                    key={index}
+                    type="tel"
+                    maxLength="1"
+                    value={emailCode[index]}
+                    onChange={(e) => handleCodeChange(e, index)}
+                    onKeyDown={(e) => handleCodeKeyDown(e, index)}
+                    ref={(el) => (inputRefs.current[index] = el)}
+                    className={`w-1/6 text-center bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600 ${isEmailOtpVerified ? 'bg-green-600' : ''}`}
+                    disabled={isEmailOtpVerified || isVerifyingOtp}
+                  />
+                ))}
               </div>
               {otpErrors.email && <p className="text-red-500 text-sm mt-1">{otpErrors.email}</p>}
               <div className="flex justify-between text-xs text-gray-400">
-                <span>Resend OTP in {emailTimer}s</span>
+                <span>Resend verification code in {emailTimer}s</span>
                 <button
                   onClick={() => handleSendOtp('email')}
                   disabled={emailTimer > 0 || isSendingOtp}
@@ -642,48 +753,9 @@ const SignupPage = () => {
               </div>
             </div>
 
-            {/* Phone OTP Section */}
-            {/* <div className="space-y-4 mb-6">
-              <label className="block text-sm text-gray-400">Phone OTP</label>
-              <div className="relative flex items-center">
-                <input
-                  type="text"
-                  value={otp.phone}
-                  onChange={(e) => setOtp({ ...otp, phone: e.target.value })}
-                  className={`w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600 ${isPhoneOtpVerified ? 'bg-green-600' : ''}`}
-                  placeholder="Enter Phone OTP"
-                  maxLength="6"
-                  disabled={isPhoneOtpVerified}
-                />
-                {isPhoneOtpVerified ? (
-                  <FaCheckCircle className="absolute right-3 text-green-500" size={20} />
-                ) : (
-                  <button
-                    onClick={() => handleVerifyOtp('phone')}
-                    disabled={isVerifyingOtp}
-                    className="ml-2 bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Verify
-                  </button>
-                )}
-              </div>
-              {otpErrors.phone && <p className="text-red-500 text-sm mt-1">{otpErrors.phone}</p>}
-              <div className="flex justify-between text-xs text-gray-400">
-                <span>Resend OTP in {phoneTimer}s</span>
-                <button
-                  onClick={() => handleSendOtp('phone')}
-                  disabled={phoneTimer > 0 || isSendingOtp}
-                  className={`text-yellow-600 hover:underline ${phoneTimer > 0 || isSendingOtp ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  Resend
-                </button>
-              </div>
-            </div> */}
-
             <button
               type="button"
               onClick={handleFinalSubmit}
-              // disabled={!isEmailOtpVerified || !isPhoneOtpVerified || isLoading}
               disabled={!isEmailOtpVerified || isLoading}
               className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >

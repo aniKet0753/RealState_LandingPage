@@ -47,7 +47,6 @@ const LeadPage = () => {
           },
         });
 
-        // console.log('Fetched leads:', response.data.leads);
         setLeads(response.data.leads);
         setTotalLeads(response.data.totalLeads);
         setTotalPages(response.data.totalPages);
@@ -71,6 +70,16 @@ const LeadPage = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const formatPhoneNumber = (phoneNumber) => {
+    if (!phoneNumber) return '';
+    const cleaned = ('' + phoneNumber).replace(/\D/g, '');
+    const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+    if (match) {
+      return `(${match[1]})- ${match[2]}-${match[3]}`;
+    }
+    return phoneNumber;
+  };
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
@@ -127,13 +136,12 @@ const LeadPage = () => {
   return (
     <div className="flex-1 flex flex-col overflow-y-auto bg-slate-900 p-3 md:p-6">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 md:mb-6 space-y-3 md:space-y-0">
-        <h1 className={`font-medium text-white ${isMobile ? 'text-xl' : 'text-2xl'}`}>Lead Management</h1>
+        <h1 className={`font-medium text-white ${isMobile ? 'text-xl' : 'text-2xl'}`}>Leads</h1>
         <div className="flex items-center space-x-2 md:space-x-3 overflow-x-auto">
           {/* Filter Dropdown */}
           <div className="relative" ref={filterRef}>
             <button 
               onClick={() => {
-                console.log('Filter button clicked, current state:', isFilterDropdownOpen);
                 setIsFilterDropdownOpen(!isFilterDropdownOpen);
               }}
               className={`text-slate-400 text-sm flex items-center space-x-2 border border-slate-600 rounded hover:bg-slate-800 whitespace-nowrap ${
@@ -150,7 +158,12 @@ const LeadPage = () => {
             </button>
             
             {isFilterDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-slate-800 border-2 border-red-500 rounded shadow-lg z-50">
+              <div className="absolute right-0 mt-2 w-48 bg-slate-800 border-2 border-grey-500 rounded shadow-lg z-50" style={{
+                  position: 'fixed',
+                  top: 'auto',
+                  right: '4%',
+                  transform: 'translateX(-50%)',
+                }}>
                 <div className="p-3">
                   <div className="flex justify-between items-center mb-3">
                     <h3 className="text-white text-sm font-medium">Filters</h3>
@@ -295,7 +308,7 @@ const LeadPage = () => {
                 </div>
                 <div className="space-y-1 text-xs text-slate-400">
                   <div>{lead.email}</div>
-                  <div>{lead.phone_number}</div>
+                  <div>{formatPhoneNumber(lead.phone_number)}</div>
                   <div className="flex justify-between">
                     <span>Source: {lead.source}</span>
                     <span>{new Date(lead.created_at).toLocaleDateString()}</span>
@@ -338,7 +351,7 @@ const LeadPage = () => {
               </thead>
               <tbody>
                 {leads.map((lead) => (
-                  <tr key={lead.id} className="border-b border-slate-700 hover:bg-slate-750">
+                  <tr key={lead.id} className="border-b border-slate-700 hover:bg-slate-700 transition-colors">
                     <td className="py-3 pr-4">
                       <input type="checkbox" className="rounded border-slate-600 bg-slate-700" />
                     </td>
@@ -357,7 +370,7 @@ const LeadPage = () => {
                       </div>
                     </td>
                     <td className="py-3 pr-4 text-slate-400 text-sm">{lead.email}</td>
-                    {!isTablet && <td className="py-3 pr-4 text-slate-400 text-sm">{lead.phone_number}</td>}
+                    {!isTablet && <td className="py-3 pr-4 text-slate-400 text-sm">{formatPhoneNumber(lead.phone_number)}</td>}
                     <td className="py-3 pr-4">
                       <span className="px-2 py-1 rounded text-xs border border-slate-500 text-slate-300 bg-slate-700">
                         {lead.status}

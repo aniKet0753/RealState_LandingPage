@@ -1,11 +1,11 @@
 import React from 'react';
-import { TrendingUp, User, Briefcase, Calendar, ClipboardList, CircleUser, Settings, HelpCircle, X, LogOut } from 'lucide-react';
+import { TrendingUp, User, Phone, Briefcase, Calendar, ClipboardList, CircleUser, Settings, HelpCircle, X, LogOut } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const menuItems = [
   { name: 'Dashboard', icon: <TrendingUp size={18} />, link: '/dashboard' },
   { name: 'Leads', icon: <User size={18} />, link: '/leads' },
-  { name: 'Deals', icon: <Briefcase size={18} />, link: '/deals' },
+  { name: 'Opportunities', icon: <Briefcase size={18} />, link: '/pportunities' },
   { name: 'Appointments', icon: <Calendar size={18} />, link: '/appointments' },
   { 
     name: 'Analytics',
@@ -19,7 +19,13 @@ const menuItems = [
 const settingsItems = [
   { name: 'Preferences', icon: <HelpCircle size={18} />, link: '/settings/preferences' },
   { name: 'Account', icon: <CircleUser size={18} />, link: '/settings/account' },
-  { name: 'AI Settings', icon: <Settings size={18} />, link: '/settings/ai' },
+  // { name: 'AI Settings', icon: <Settings size={18} />, link: '/settings/ai' },
+];
+
+const aiItems = [
+
+  { name: 'AI Configurations', icon: <Settings size={18} />, link: '/ai/configurations' },
+  { name: 'Phone agent', icon: <Phone size={18} />, link: '/ai/phone-agent' },
 ];
 
 const Sidebar = ({ isSidebarOpen, closePanels, isMobile, isTablet, toggleSidebar }) => {
@@ -30,12 +36,8 @@ const Sidebar = ({ isSidebarOpen, closePanels, isMobile, isTablet, toggleSidebar
 
   // Handle logout functionality
   const handleLogout = () => {
-    // In a real application, you would:
-    // 1. Make an API call to the logout endpoint.
-    // 2. Clear user data from local storage, session storage, or cookies.
-    localStorage.removeItem('authToken'); 
-    localStorage.removeItem('user');
-    
+    localStorage.clear();
+    sessionStorage.clear();
     // Redirect the user to the login page
     navigate('/login');
   };
@@ -98,11 +100,42 @@ const Sidebar = ({ isSidebarOpen, closePanels, isMobile, isTablet, toggleSidebar
           ))}
         </div>
 
-        <div className="border-t border-slate-700 my-4"></div>
+      <div className="border-t border-slate-700 my-4"></div>
         <div className="text-sm text-slate-500 px-3 py-2 uppercase tracking-wider">Settings</div>
 
         <div className="space-y-1">
           {settingsItems.map((item, index) => (
+            <Link
+              to={item.link}
+              key={index}
+              className={`flex items-center space-x-3 px-3 py-2 rounded text-sm ${
+                isActive(item.link) ? 'bg-slate-700 text-white' : 'text-slate-400 hover:bg-slate-800'
+              }`}
+              onClick={closePanels}
+            >
+              <span>{item.icon}</span>
+              <span>{item.name}</span>
+            </Link>
+          ))}
+          {/* Add a logout button
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center space-x-3 px-3 py-2 rounded text-sm text-slate-400 hover:bg-slate-800"
+          >
+            <span><LogOut size={18} /></span>
+            <span>Log out</span>
+          </button> */}
+        </div>
+
+        <div className="mt-6 mx-3">
+          <div className="bg-slate-800 p-3 rounded">
+            <div className="text-white text-sm font-medium mb-2">AI Assistant</div>
+            <div className="text-slate-400 text-xs">Leverage AI to qualify leads and automate follow-ups.</div>
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          {aiItems.map((item, index) => (
             <Link
               to={item.link}
               key={index}
@@ -123,13 +156,6 @@ const Sidebar = ({ isSidebarOpen, closePanels, isMobile, isTablet, toggleSidebar
             <span><LogOut size={18} /></span>
             <span>Log out</span>
           </button>
-        </div>
-
-        <div className="mt-6 mx-3">
-          <div className="bg-slate-800 p-3 rounded">
-            <div className="text-white text-sm font-medium mb-2">AI Assistant</div>
-            <div className="text-slate-400 text-xs">Leverage AI to qualify leads and automate follow-ups.</div>
-          </div>
         </div>
       </nav>
     </div>

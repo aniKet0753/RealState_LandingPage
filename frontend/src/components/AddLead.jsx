@@ -9,7 +9,6 @@ const AddLeadPage = () => {
   const [notification, setNotification] = useState({ message: '', type: '' });
   
   const [formData, setFormData] = useState({
-    // user_id: localStorage.getItem('user_id') || sessionStorage.getItem('user_id'),
     firstName: '',
     lastName: '',
     email: '',
@@ -39,7 +38,6 @@ const AddLeadPage = () => {
     let processedValue = value;
 
     if (name === 'bedrooms' || name === 'bathrooms') {
-      // Convert to integer, or set to null/empty string for non-numeric input
       processedValue = value !== '' ? parseInt(value, 10) : '';
     }
 
@@ -76,7 +74,6 @@ const AddLeadPage = () => {
 
   const buildPayload = (data) => {
     const payload = {
-      // user_id: data.user_id,
       first_name: data.firstName,
       last_name: data.lastName,
       email: data.email,
@@ -94,7 +91,6 @@ const AddLeadPage = () => {
       social_media: data.socialMedia.filter(s => s.platform && s.handle),
     };
 
-    // Remove keys with empty string, null, or undefined
     Object.keys(payload).forEach(
       (key) => (payload[key] === '' || payload[key] === null || payload[key] === undefined) && delete payload[key]
     );
@@ -107,12 +103,10 @@ const AddLeadPage = () => {
     setIsLoading(true);
 
     try {
-      // Filter out any empty social media entries before submission
       const filteredSocialMedia = formData.socialMedia.filter(
         (social) => social.platform && social.handle
       );
 
-      // Construct the data object for submission
       const payload = buildPayload(formData);
 
       const response = await axios.post('/api/leads', payload, {
@@ -130,7 +124,6 @@ const AddLeadPage = () => {
       
     } catch (err) {
       console.error('Failed to create lead:', err);
-      // More specific error message if available
       const errorMessage = err.response?.data?.error || 'An unknown error occurred.';
       showNotification(`Failed to create lead: ${errorMessage}`, 'error');
     } finally {
@@ -159,14 +152,14 @@ const AddLeadPage = () => {
         <div className="mb-6">
           <h2 className="text-xl font-semibold mb-4 text-white">Lead Type</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <label className={`p-4 rounded-md border border-slate-700 hover:bg-slate-700 cursor-pointer flex items-center space-x-2 transition-colors ${formData.leadType === 'Buyer' ? 'bg-slate-700 border-slate-600' : ''}`}>
+            <label className={`p-4 rounded-md border border-slate-700 hover:bg-slate-700 cursor-pointer flex items-center space-x-2 transition-colors ${formData.leadType === 'Buyer' ? 'bg-slate-700 border-yellow-500' : ''}`}>
               <input
                 type="radio"
                 name="leadType"
                 value="Buyer"
                 checked={formData.leadType === 'Buyer'}
                 onChange={handleChange}
-                className="accent-slate-400"
+                className="accent-yellow-400"
                 required
               />
               <div>
@@ -174,14 +167,14 @@ const AddLeadPage = () => {
                 <div className="text-slate-400 text-sm">Looking to purchase property</div>
               </div>
             </label>
-            <label className={`p-4 rounded-md border border-slate-700 hover:bg-slate-700 cursor-pointer flex items-center space-x-2 transition-colors ${formData.leadType === 'Seller' ? 'bg-slate-700 border-slate-600' : ''}`}>
+            <label className={`p-4 rounded-md border border-slate-700 hover:bg-slate-700 cursor-pointer flex items-center space-x-2 transition-colors ${formData.leadType === 'Seller' ? 'bg-slate-700 border-yellow-500' : ''}`}>
               <input
                 type="radio"
                 name="leadType"
                 value="Seller"
                 checked={formData.leadType === 'Seller'}
                 onChange={handleChange}
-                className="accent-slate-400"
+                className="accent-yellow-400"
                 required
               />
               <div>
@@ -189,14 +182,14 @@ const AddLeadPage = () => {
                 <div className="text-slate-400 text-sm">Looking to sell property</div>
               </div>
             </label>
-            <label className={`p-4 rounded-md border border-slate-700 hover:bg-slate-700 cursor-pointer flex items-center space-x-2 transition-colors ${formData.leadType === 'Investor' ? 'bg-slate-700 border-slate-600' : ''}`}>
+            <label className={`p-4 rounded-md border border-slate-700 hover:bg-slate-700 cursor-pointer flex items-center space-x-2 transition-colors ${formData.leadType === 'Investor' ? 'bg-slate-700 border-yellow-500' : ''}`}>
               <input
                 type="radio"
                 name="leadType"
                 value="Investor"
                 checked={formData.leadType === 'Investor'}
                 onChange={handleChange}
-                className="accent-slate-400"
+                className="accent-yellow-400"
                 required
               />
               <div>
@@ -211,10 +204,10 @@ const AddLeadPage = () => {
         <div className="mb-6">
           <h2 className="text-xl font-semibold mb-4 text-white">Contact Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input type="text" name="firstName" value={formData.firstName} onChange={handleChange} placeholder="First Name *" className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-slate-500" required />
-            <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} placeholder="Last Name *" className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-slate-500" required />
-            <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email Address *" className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-slate-500" required />
-            <input type="tel" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} placeholder="Phone Number *" className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-slate-500" required />
+            <input type="text" name="firstName" value={formData.firstName} onChange={handleChange} placeholder="First Name *" className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" required />
+            <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} placeholder="Last Name *" className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" required />
+            <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email Address *" className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" required />
+            <input type="tel" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} placeholder="Phone Number *" className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" required />
           </div>
         </div>
 
@@ -222,7 +215,7 @@ const AddLeadPage = () => {
         <div className="mb-6">
           <h2 className="text-xl font-semibold mb-4 text-white">Property Preferences</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <select name="propertyType" value={formData.propertyType} onChange={handleChange} className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-slate-500" >
+            <select name="propertyType" value={formData.propertyType} onChange={handleChange} className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" >
               <option value="">Select property type</option>
               <option value="House">House</option>
               <option value="Condo">Condo</option>
@@ -230,15 +223,15 @@ const AddLeadPage = () => {
               <option value="Land">Land</option>
               <option value="Other">Other</option>
             </select>
-            <select name="budgetRange" value={formData.budgetRange} onChange={handleChange} className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-slate-500" >
+            <select name="budgetRange" value={formData.budgetRange} onChange={handleChange} className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" >
               <option value="">Select budget range</option>
               <option value="$100k - $250k">$100k - $250k</option>
               <option value="$250k - $500k">$250k - $500k</option>
               <option value="$500k - $1M">$500k - $1M</option>
               <option value="$1M+">$1M+</option>
             </select>
-            <input type="text" name="preferredLocation" value={formData.preferredLocation} onChange={handleChange} placeholder="City, neighborhood, or zip" className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-slate-500" />
-            <select name="bedrooms" value={formData.bedrooms} onChange={handleChange} className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-slate-500" >
+            <input type="text" name="preferredLocation" value={formData.preferredLocation} onChange={handleChange} placeholder="City, neighborhood, or zip" className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" />
+            <select name="bedrooms" value={formData.bedrooms} onChange={handleChange} className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" >
               <option value="">Bedrooms</option>
               <option value="1">1</option>
               <option value="2">2</option>
@@ -247,7 +240,7 @@ const AddLeadPage = () => {
               <option value="5">5</option>
               <option value="6">6</option>
             </select>
-            <select name="bathrooms" value={formData.bathrooms} onChange={handleChange} className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-slate-500" >
+            <select name="bathrooms" value={formData.bathrooms} onChange={handleChange} className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" >
               <option value="">Bathrooms</option>
               <option value="1">1</option>
               <option value="2">2</option>
@@ -255,7 +248,7 @@ const AddLeadPage = () => {
               <option value="4">4</option>
               <option value="5">5</option>
             </select>
-            <select name="timeline" value={formData.timeline} onChange={handleChange} className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-slate-500" >
+            <select name="timeline" value={formData.timeline} onChange={handleChange} className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" >
               <option value="">Timeline</option>
               <option value="Immediate">Immediate</option>
               <option value="1-3 months">1-3 months</option>
@@ -269,14 +262,14 @@ const AddLeadPage = () => {
         <div className="mb-6">
           <h2 className="text-xl font-semibold mb-4 text-white">Lead Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <select name="leadSource" value={formData.leadSource} onChange={handleChange} className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-slate-500" >
+            <select name="leadSource" value={formData.leadSource} onChange={handleChange} className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" >
               <option value="Referral">Referral</option>
               <option value="SocialMedia">Social Media</option>
               <option value="Website">Website</option>
               <option value="Zillow">Zillow</option>
               <option value="Other">Other</option>
             </select>
-            <select name="leadStatus" value={formData.leadStatus} onChange={handleChange} className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-slate-500" >
+            <select name="leadStatus" value={formData.leadStatus} onChange={handleChange} className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" >
               <option value="New">New</option>
               <option value="Nurturing">Nurturing</option>
               <option value="Qualified">Qualified</option>
@@ -284,7 +277,7 @@ const AddLeadPage = () => {
               <option value="Contacted">Contacted</option>
             </select>
           </div>
-          <textarea name="notes" value={formData.notes} onChange={handleChange} placeholder="Notes" className="w-full bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-slate-500" rows="4"></textarea>
+          <textarea name="notes" value={formData.notes} onChange={handleChange} placeholder="Notes" className="w-full bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" rows="4"></textarea>
         </div>
         
         {/* Social Media Section */}
@@ -307,7 +300,7 @@ const AddLeadPage = () => {
                   name="platform"
                   value={social.platform}
                   onChange={(e) => handleSocialMediaChange(index, e)}
-                  className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-slate-500"
+                  className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
                 >
                   <option value="">Select Platform</option>
                   <option value="LinkedIn">LinkedIn</option>
@@ -324,7 +317,7 @@ const AddLeadPage = () => {
                   value={social.handle}
                   onChange={(e) => handleSocialMediaChange(index, e)}
                   placeholder="Handle (e.g., @johndoe)"
-                  className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-slate-500"
+                  className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
                 />
               </div>
               {formData.socialMedia.length > 1 && (
@@ -341,7 +334,7 @@ const AddLeadPage = () => {
         </div>
 
         <div className="flex justify-end space-x-4">
-          <button type="button" className="bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-md transition-colors">Save as Draft</button>
+          <button type="button" onClick={()=>{navigate('/leads')}} className="bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-md transition-colors">Cancel</button>
           <button type="submit" disabled={isLoading} className="bg-slate-600 hover:bg-slate-500 text-white font-bold py-3 px-6 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
             {isLoading ? 'Creating...' : 'Create Lead'}
           </button>

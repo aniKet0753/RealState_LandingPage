@@ -1,11 +1,24 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
 const leadController = require('../controllers/leadController');
+const aiLeadController = require('../controllers/aileadController');
 const authenticateToken = require('../middleware/auth');
 const validate = require('../middleware/validation');
 const { addLeadSchema } = require('../schemas/leadSchema');
+const { bulkUploadLeads } = require('../controllers/leadController');
+
+// Configure multer for file storage
+// Using memory storage for smaller files or disk storage for larger ones
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 router.post('/', authenticateToken, validate(addLeadSchema), leadController.addLead);
+
+router.post('/add-lead-by-ai', aiLeadController.addLeadByAI);
+
+// Route to handle bulk lead upload
+router.post('/bulk-upload', authenticateToken, upload.single('file'), bulkUploadLeads);
 
 // Route to get all leads with pagination
 // Example: /api/leads?page=1&limit=10

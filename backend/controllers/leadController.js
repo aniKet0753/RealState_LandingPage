@@ -1,4 +1,132 @@
+const { Readable } = require('stream');
+const csv = require('csv-parser');
 const supabase = require('../db/supabaseClient');
+const { addLeadSchema } = require('../schemas/leadSchema');
+
+// Define required headers for the CSV file
+const REQUIRED_HEADERS = [
+    'first_name',
+    'last_name',
+    'email',
+    'phone_number',
+    'status',
+    'source',
+    'type',
+    'notes',
+    'property_type',
+    'budget_range',
+    'preferred_location',
+    'bedrooms',
+    'bathrooms',
+    'timeline',
+    'social_media'
+];
+
+// Helper function to safely parse integer values, handling empty strings and non-numeric input
+const parseInteger = (value) => {
+    if (value === null || value === undefined || value.trim() === '') {
+        return null;
+    }
+    const parsed = parseInt(value, 10);
+    return isNaN(parsed) ? null : parsed;
+};
+
+exports.bulkUploadLeads = async (req, res) => {
+    // Check if a file was uploaded
+    if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded.' });
+    }
+
+    const leads = [];
+    const validationErrors = [];
+    const bufferStream = new Readable();
+    bufferStream.push(req.file.buffer);
+    bufferStream.push(null);
+
+    let hasHeaders = false;
+
+    // Parse the CSV file
+    bufferStream
+        .pipe(csv())
+        .on('headers', (headers) => {
+            // Validate headers
+            const missingHeaders = REQUIRED_HEADERS.filter(header => !headers.includes(header));
+            if (missingHeaders.length > 0) {
+                // To avoid sending response multiple times, push an error to the array
+                validationErrors.push(`Missing required headers: ${missingHeaders.join(', ')}`);
+                bufferStream.destroy(); // Stop parsing
+            }
+            hasHeaders = true;
+        })
+        .on('data', (data) => {
+            if (validationErrors.length > 0) return; // Skip data processing if headers are missing
+
+            const leadData = {
+                user_id: req.user.userId,
+                first_name: data.first_name,
+                last_name: data.last_name,
+                email: data.email,
+                phone_number: data.phone_number,
+                status: data.status,
+                source: data.source,
+                type: data.type,
+                notes: data.notes,
+                property_type: data.property_type,
+                budget_range: data.budget_range,
+                preferred_location: data.preferred_location,
+                bedrooms: parseInteger(data.bedrooms),
+                bathrooms: parseInteger(data.bathrooms),
+                timeline: data.timeline,
+                social_media: data.social_media ? JSON.parse(data.social_media) : []
+            };
+
+            // Create a temporary object for Joi validation without the user_id
+            const validationData = { ...leadData };
+            delete validationData.user_id;
+
+            // Validate each row against the Joi schema
+            const { error } = addLeadSchema.validate(validationData, { abortEarly: false });
+
+            if (error) {
+                error.details.forEach(detail => {
+                    validationErrors.push(`Row ${leads.length + 2}: ${detail.message}`);
+                });
+            } else {
+                leads.push(leadData);
+            }
+        })
+        .on('end', async () => {
+            if (validationErrors.length > 0) {
+                return res.status(400).json({ error: validationErrors.join('; ') });
+            }
+
+            if (!hasHeaders) {
+                return res.status(400).json({ error: 'CSV file is empty or missing headers.' });
+            }
+
+            if (leads.length === 0) {
+                return res.status(400).json({ message: 'No valid leads found in the spreadsheet.' });
+            }
+
+            try {
+                // Bulk insert into Supabase
+                const { data, error } = await supabase
+                    .from('leads')
+                    .insert(leads)
+                    .select();
+
+                if (error) {
+                    throw error;
+                }
+
+                res.status(200).json({ message: `${leads.length} leads added successfully.`, leads: data });
+            } catch (dbError) {
+                // This will catch unique constraint errors, etc.
+                res.status(500).json({ error: dbError.message });
+            }
+        });
+};
+
 
 // Add a new lead
 exports.addLead = async (req, res) => {

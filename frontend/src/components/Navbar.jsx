@@ -1,8 +1,28 @@
-import React from 'react';
-import { Search, Menu, MessageCircle, Plus, Bell } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Search, Menu, MessageCircle, ChevronDown, Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Navbar = ({ toggleSidebar, toggleAIAssistant, isMobile, isTablet }) => {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleToggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
   return (
     <div className="flex items-center justify-between p-3 md:p-4 bg-slate-900 border-b border-slate-700 relative z-30">
       <div className="flex items-center">
@@ -40,14 +60,37 @@ const Navbar = ({ toggleSidebar, toggleAIAssistant, isMobile, isTablet }) => {
           {!isMobile && <span>AI ASSISTANT</span>}
         </button>
         
-        <Link to='/add-lead'>
-          <button className={`bg-slate-600 text-white text-sm rounded font-medium hover:bg-slate-500 flex items-center space-x-1 md:space-x-2 ${
-            isMobile ? 'px-2 py-1' : 'px-4 py-2'
-          }`}>
-            <Plus size={14} />
+        {/* New Lead Dropdown */}
+        <div className="relative" ref={dropdownRef}>
+          <button
+            onClick={handleToggleDropdown}
+            className={`bg-slate-600 text-white text-sm rounded font-medium hover:bg-slate-500 flex items-center space-x-1 md:space-x-2 ${
+              isMobile ? 'px-2 py-1' : 'px-4 py-2'
+            }`}
+          >
+            <ChevronDown size={14} />
             {!isMobile && <span>NEW LEAD</span>}
           </button>
-        </Link>
+          
+          {isDropdownOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-slate-800 rounded-md shadow-lg z-50 py-1">
+              <Link 
+                to="/add-lead" 
+                onClick={() => setIsDropdownOpen(false)}
+                className="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white"
+              >
+                Add Single Lead
+              </Link>
+              <Link 
+                to="/add-bulk-lead" 
+                onClick={() => setIsDropdownOpen(false)}
+                className="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white"
+              >
+                Add Bulk Lead (Spreadsheet)
+              </Link>
+            </div>
+          )}
+        </div>
         
         <Bell size={isMobile ? 18 : 20} className="text-slate-400" />
         <div className={`bg-slate-600 rounded-full ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`}></div>
