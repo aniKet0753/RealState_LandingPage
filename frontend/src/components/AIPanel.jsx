@@ -1,5 +1,6 @@
 import React from 'react';
 import { User, TrendingUp, ClipboardList, X } from 'lucide-react';
+import AIAssistant from './AIAssistant';
 
 const AIPanel = ({ isAIAssistantOpen, toggleAIAssistant, isMobile, isTablet }) => {
   return (
@@ -14,27 +15,7 @@ const AIPanel = ({ isAIAssistantOpen, toggleAIAssistant, isMobile, isTablet }) =
           <X size={18} />
         </button>
       </div>
-      
       <div className="p-4">
-        <div className="mb-6">
-          <div className="flex items-center space-x-2 mb-2">
-            <User size={16} className="text-slate-400" />
-            <span className="text-sm text-slate-300">Lead Insight</span>
-          </div>
-          <div className="bg-slate-700 p-3 rounded border border-slate-600">
-            <p className="text-slate-300 text-sm">Sarah Johnson viewed the Luxury Condo 5 times this week. Consider reaching out with financing options.</p>
-          </div>
-        </div>
-        
-        <div className="mb-6">
-          <div className="flex items-center space-x-2 mb-2">
-            <TrendingUp size={16} className="text-slate-400" />
-            <span className="text-sm text-slate-300">Market Update</span>
-          </div>
-          <div className="bg-slate-700 p-3 rounded border border-slate-600">
-            <p className="text-slate-300 text-sm">Property values in Westside increased 7% this quarter. Good time to contact previous clients.</p>
-          </div>
-        </div>
         
         <div className="mb-6">
           <div className="flex items-center space-x-2 mb-2">
@@ -42,14 +23,17 @@ const AIPanel = ({ isAIAssistantOpen, toggleAIAssistant, isMobile, isTablet }) =
             <span className="text-sm text-slate-300">Task Suggestion</span>
           </div>
           <div className="bg-slate-700 p-3 rounded border border-slate-600">
-            <p className="text-slate-300 text-sm mb-2">No contact with Emma Rodriguez in 14 days. Schedule a follow-up call.</p>
-            <button className="text-slate-300 text-xs px-2 py-1 bg-slate-600 rounded hover:bg-slate-500">
+            <p className="text-slate-300 text-sm mb-2">Compose an email to Emma Rodriguez, requesting her to kindly share the most recent real estate market statistics with me.</p>
+            {/* <button className="text-slate-300 text-xs px-2 py-1 bg-slate-600 rounded hover:bg-slate-500">
               Schedule Call
-            </button>
+            </button> */}
           </div>
         </div>
       </div>
+      <AIAssistant />
+      
     </div>
+    
   );
 };
 
