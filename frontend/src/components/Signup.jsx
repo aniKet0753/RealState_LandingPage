@@ -5,156 +5,12 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaEye, FaEyeSlash, FaShieldAlt, FaPlusCircle, FaHeadset, FaSearch, FaChevronDown, FaCheckCircle, FaExclamationCircle, FaTimes } from 'react-icons/fa';
 
-// Hardcoded list of cities and states
-const US_CITIES_STATES = [
-  { city: 'New York', state: 'New York' },
-  { city: 'Los Angeles', state: 'California' },
-  { city: 'Chicago', state: 'Illinois' },
-  { city: 'Houston', state: 'Texas' },
-  { city: 'Phoenix', state: 'Arizona' },
-  { city: 'Philadelphia', state: 'Pennsylvania' },
-  { city: 'San Antonio', state: 'Texas' },
-  { city: 'San Diego', state: 'California' },
-  { city: 'Dallas', state: 'Texas' },
-  { city: 'San Jose', state: 'California' },
-  { city: 'Austin', state: 'Texas' },
-  { city: 'Jacksonville', state: 'Florida' },
-  { city: 'Fort Worth', state: 'Texas' },
-  { city: 'Columbus', state: 'Ohio' },
-  { city: 'Charlotte', state: 'North Carolina' },
-  { city: 'Indianapolis', state: 'Indiana' },
-  { city: 'San Francisco', state: 'California' },
-  { city: 'Seattle', state: 'Washington' },
-  { city: 'Denver', state: 'Colorado' },
-  { city: 'Washington', state: 'District of Columbia' },
-  { city: 'Boston', state: 'Massachusetts' },
-  { city: 'Atlanta', state: 'Georgia' },
-  { city: 'Miami', state: 'Florida' },
-  { city: 'Las Vegas', state: 'Nevada' },
-  { city: 'Portland', state: 'Oregon' },
-  { city: 'Detroit', state: 'Michigan' },
-  { city: 'Nashville', state: 'Tennessee' },
-  { city: 'Memphis', state: 'Tennessee' },
-  { city: 'Louisville', state: 'Kentucky' },
-  { city: 'Baltimore', state: 'Maryland' },
-  { city: 'Milwaukee', state: 'Wisconsin' },
-  { city: 'Oklahoma City', state: 'Oklahoma' },
-  { city: 'Tucson', state: 'Arizona' },
-  { city: 'Fresno', state: 'California' },
-  { city: 'Sacramento', state: 'California' },
-  { city: 'Kansas City', state: 'Missouri' },
-  { city: 'Long Beach', state: 'California' },
-  { city: 'Mesa', state: 'Arizona' },
-  { city: 'Virginia Beach', state: 'Virginia' },
-  { city: 'Omaha', state: 'Nebraska' },
-  { city: 'Raleigh', state: 'North Carolina' },
-  { city: 'Colorado Springs', state: 'Colorado' },
-  { city: 'Oakland', state: 'California' },
-  { city: 'Minneapolis', state: 'Minnesota' },
-  { city: 'Tulsa', state: 'Oklahoma' },
-  { city: 'Arlington', state: 'Texas' },
-  { city: 'Wichita', state: 'Kansas' },
-  { city: 'New Orleans', state: 'Louisiana' },
-  { city: 'Cleveland', state: 'Ohio' },
-  { city: 'Honolulu', state: 'Hawaii' },
-  { city: 'Tampa', state: 'Florida' },
-  { city: 'Bakersfield', state: 'California' },
-  { city: 'Aurora', state: 'Colorado' },
-  { city: 'Anaheim', state: 'California' },
-  { city: 'Santa Ana', state: 'California' },
-  { city: 'Corpus Christi', state: 'Texas' },
-  { city: 'Riverside', state: 'California' },
-  { city: 'Lexington', state: 'Kentucky' },
-  { city: 'Stockton', state: 'California' },
-  { city: 'Henderson', state: 'Nevada' },
-  { city: 'Saint Paul', state: 'Minnesota' },
-  { city: 'St. Louis', state: 'Missouri' },
-  { city: 'Cincinnati', state: 'Ohio' },
-  { city: 'Pittsburgh', state: 'Pennsylvania' },
-  { city: 'Greensboro', state: 'North Carolina' },
-  { city: 'Anchorage', state: 'Alaska' },
-  { city: 'Plano', state: 'Texas' },
-  { city: 'Lincoln', state: 'Nebraska' },
-  { city: 'Orlando', state: 'Florida' },
-  { city: 'Irvine', state: 'California' },
-  { city: 'Newark', state: 'New Jersey' },
-  { city: 'Toledo', state: 'Ohio' },
-  { city: 'Durham', state: 'North Carolina' },
-  { city: 'Chula Vista', state: 'California' },
-  { city: 'Fort Wayne', state: 'Indiana' },
-  { city: 'Jersey City', state: 'New Jersey' },
-  { city: 'Chandler', state: 'Arizona' },
-  { city: 'Madison', state: 'Wisconsin' },
-  { city: 'Lubbock', state: 'Texas' },
-  { city: 'Scottsdale', state: 'Arizona' },
-  { city: 'Reno', state: 'Nevada' },
-  { city: 'Buffalo', state: 'New York' },
-  { city: 'Gilbert', state: 'Arizona' },
-  { city: 'Glendale', state: 'California' },
-  { city: 'North Las Vegas', state: 'Nevada' },
-  { city: 'Winston-Salem', state: 'North Carolina' },
-  { city: 'Chesapeake', state: 'Virginia' },
-  { city: 'Norfolk', state: 'Virginia' },
-  { city: 'Fremont', state: 'California' },
-  { city: 'Garland', state: 'Texas' },
-  { city: 'Irving', state: 'Texas' },
-  { city: 'Hialeah', state: 'Florida' },
-  { city: 'Richmond', state: 'Virginia' },
-  { city: 'Boise', state: 'Idaho' },
-  { city: 'Spokane', state: 'Washington' },
-  { city: 'Des Moines', state: 'Iowa' },
-  { city: 'Modesto', state: 'California' },
-  { city: 'Birmingham', state: 'Alabama' },
-  { city: 'Tacoma', state: 'Washington' },
-  { city: 'Fontana', state: 'California' },
-  { city: 'Oxnard', state: 'California' },
-  { city: 'Moreno Valley', state: 'California' },
-  { city: 'Glendale', state: 'Arizona' },
-  { city: 'Yonkers', state: 'New York' },
-  { city: 'Huntington Beach', state: 'California' },
-  { city: 'Montgomery', state: 'Alabama' },
-  { city: 'Amarillo', state: 'Texas' },
-  { city: 'Akron', state: 'Ohio' },
-  { city: 'Little Rock', state: 'Arkansas' },
-  { city: 'Augusta', state: 'Georgia' },
-  { city: 'Grand Rapids', state: 'Michigan' },
-  { city: 'Shreveport', state: 'Louisiana' },
-  { city: 'Columbia', state: 'South Carolina' },
-  { city: 'Overland Park', state: 'Kansas' },
-  { city: 'Knoxville', state: 'Tennessee' },
-  { city: 'Tempe', state: 'Arizona' },
-  { city: 'Waterbury', state: 'Connecticut' },
-  { city: 'Manchester', state: 'New Hampshire' },
-  { city: 'Huntsville', state: 'Alabama' },
-  { city: 'Salt Lake City', state: 'Utah' },
-  { city: 'Newport News', state: 'Virginia' },
-  { city: 'Cape Coral', state: 'Florida' },
-  { city: 'Peoria', state: 'Arizona' },
-  { city: 'Sioux Falls', state: 'South Dakota' },
-  { city: 'Springfield', state: 'Missouri' },
-  { city: 'Eugene', state: 'Oregon' },
-  { city: 'Harrisburg', state: 'Pennsylvania' },
-  { city: 'Charleston', state: 'South Carolina' },
-  { city: 'Gainesville', state: 'Florida' },
-  { city: 'Chattanooga', state: 'Tennessee' },
-  { city: 'Bismarck', state: 'North Dakota' },
-  { city: 'Cheyenne', state: 'Wyoming' },
-  { city: 'Billings', state: 'Montana' },
-  { city: 'Rapid City', state: 'South Dakota' },
-  { city: 'Bismarck', state: 'North Dakota' },
-  { city: 'Pierre', state: 'South Dakota' },
-  { city: 'Frankfort', state: 'Kentucky' },
-  { city: 'Montpelier', state: 'Vermont' },
-  { city: 'Concord', state: 'New Hampshire' },
-  { city: 'Jefferson City', state: 'Missouri' },
-  { city: 'Lansing', state: 'Michigan' },
-  { city: 'Trenton', state: 'New Jersey' },
-  { city: 'Providence', state: 'Rhode Island' },
-  { city: 'Montpelier', state: 'Vermont' },
-  { city: 'Charleston', state: 'West Virginia' },
-  { city: 'Madison', state: 'Wisconsin' },
- 
-]
+// Import dynamic selection components
+import { StateSelect, CitySelect } from 'react-country-state-city';
+import 'react-country-state-city/dist/react-country-state-city.css';
+
+// Set the Country ID for the United States
+const US_COUNTRY_ID = 233;
 
 const SignupPage = () => {
   const navigate = useNavigate();
@@ -166,12 +22,15 @@ const SignupPage = () => {
     company_name: '',
     address: '',
     city: '',
+    cityid: '', // Added for the City component
     state: '',
+    stateid: '', // Added for the State component
     password: '',
     confirmPassword: '',
     terms: false,
     communications: false,
   });
+
 
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -184,6 +43,7 @@ const SignupPage = () => {
     specialChar: false,
   });
   const [validationErrors, setValidationErrors] = useState({});
+
 
   // OTP state
   const [showOtpPopup, setShowOtpPopup] = useState(false);
@@ -198,10 +58,6 @@ const SignupPage = () => {
   const [otpErrors, setOtpErrors] = useState({ email: '', phone: '' });
   const [finalSubmitError, setFinalSubmitError] = useState('');
 
-  // States for searchable text fields with suggestions
-  const [citySearchInput, setCitySearchInput] = useState('');
-  const [filteredLocations, setFilteredLocations] = useState([]);
-  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
   
   // Check password strength and validation rules
   const checkPasswordValidation = (password) => {
@@ -214,30 +70,30 @@ const SignupPage = () => {
     };
     setPasswordValidation(rules);
 
-    let strength = 0;
-    if (rules.length) strength++;
-    if (rules.lowercase && rules.uppercase) strength++;
-    if (rules.number) strength++;
-    if (rules.specialChar) strength++;
+
+    let strength = Object.values(rules).filter(Boolean).length;
 
     switch (strength) {
       case 0:
       case 1:
-        return 'Weak';
       case 2:
+        return 'Weak';
       case 3:
         return 'Medium';
       case 4:
+      case 5:
         return 'Strong';
       default:
         return 'Weak';
     }
   };
 
+
   // Handle input changes, now with phone number length enforcement
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     let newValue = type === 'checkbox' ? checked : value;
+
 
     // Limit phone number to 10 characters
     if (name === 'phone_number') {
@@ -246,14 +102,17 @@ const SignupPage = () => {
       }
     }
 
+
     setFormData((prev) => ({
       ...prev,
       [name]: newValue,
     }));
 
+
     if (name === 'password') {
       setPasswordStrength(checkPasswordValidation(newValue));
     }
+
 
     // Clear validation error on change
     if (validationErrors[name]) {
@@ -261,33 +120,33 @@ const SignupPage = () => {
     }
   };
 
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
-  const handleCitySearchChange = (e) => {
-    const { value } = e.target;
-    setCitySearchInput(value);
-    
-    if (value.length > 1) {
-      const filtered = US_CITIES_STATES.filter(location =>
-        location.city.toLowerCase().includes(value.toLowerCase()) || 
-        location.state.toLowerCase().includes(value.toLowerCase())
-      );
-      setFilteredLocations(filtered);
-      setShowLocationSuggestions(true);
-    } else {
-      setFilteredLocations([]);
-      setShowLocationSuggestions(false);
-    }
-    setValidationErrors((prev) => ({ ...prev, city: '', state: '' }));
+
+  // NEW: Handlers for dynamic State and City dropdowns
+  const handleStateChange = (state) => {
+    setFormData(prev => ({
+      ...prev,
+      state: state ? state.name : '',
+      stateid: state ? state.id : '',
+      city: '', // Reset city when state changes
+      cityid: '',
+    }));
+    setValidationErrors(prev => ({ ...prev, stateid: '', city: '' }));
   };
 
-  const handleCitySelect = (city, state) => {
-    setFormData(prev => ({ ...prev, city, state }));
-    setCitySearchInput(city);
-    setShowLocationSuggestions(false);
+  const handleCityChange = (city) => {
+    setFormData(prev => ({
+      ...prev,
+      city: city ? city.name : '',
+      cityid: city ? city.id : '',
+    }));
+    setValidationErrors(prev => ({ ...prev, city: '' }));
   };
+
 
   // Email verification code timer
   useEffect(() => {
@@ -299,6 +158,7 @@ const SignupPage = () => {
     }
   }, [emailTimer]);
 
+
   // Phone verification code timer
   useEffect(() => {
     if (phoneTimer > 0) {
@@ -308,6 +168,7 @@ const SignupPage = () => {
       return () => clearInterval(timerId);
     }
   }, [phoneTimer]);
+
 
   const handleSendOtp = async (type) => {
     setIsSendingOtp(true);
@@ -324,12 +185,12 @@ const SignupPage = () => {
       }
     } catch (err) {
       console.error(`Failed to send ${type} verification code:`, err);
-      // Set inline error instead of a toast
-      setOtpErrors(prev => ({ ...prev, [type]: `${err.response.data.error}` }));
+      setOtpErrors(prev => ({ ...prev, [type]: `${err.response?.data?.error || 'An error occurred'}` }));
     } finally {
       setIsSendingOtp(false);
     }
   };
+
 
   const handleVerifyOtp = async (type, codeArray = null) => {
     setIsVerifyingOtp(true);
@@ -338,13 +199,13 @@ const SignupPage = () => {
     try {
         const code = codeArray || (type === 'email' ? emailCode : null);
 
-        if (code.some(digit => digit === '')) {
+        if (!code || code.some(digit => digit === '')) {
             setOtpErrors(prev => ({ ...prev, [type]: 'Please enter all 6 digits.' }));
+            setIsVerifyingOtp(false);
             return;
         }
 
         const verificationCode = code.join('');
-        console.log('Verifying code:', verificationCode);
 
         const payload = { 
             identifier: type === 'email' ? formData.email : formData.phone_number, 
@@ -366,17 +227,20 @@ const SignupPage = () => {
     } finally {
         setIsVerifyingOtp(false);
     }
-};
+  };
+
 
   const handleOpenOtpModal = (e) => {
     e.preventDefault();
 
     let errors = {};
-    const requiredFields = ['first_name', 'last_name', 'email', 'phone_number', 'company_name', 'address', 'city', 'state', 'password', 'confirmPassword'];
+    const requiredFields = ['first_name', 'last_name', 'email', 'phone_number', 'company_name', 'address', 'stateid', 'cityid', 'password', 'confirmPassword'];
     
     requiredFields.forEach(field => {
+      // Use stateid and cityid for validation
       if (!formData[field]) {
-        errors[field] = 'This field is required.';
+        const fieldName = (field === 'stateid' ? 'state' : (field === 'cityid' ? 'city' : field));
+        errors[fieldName] = 'This field is required.';
       }
     });
 
@@ -407,6 +271,7 @@ const SignupPage = () => {
     setShowOtpPopup(true);
   };
 
+
   const handleCloseOtpModal = () => {
     setShowOtpPopup(false);
     setEmailCode(['', '', '', '', '', '']);
@@ -418,32 +283,32 @@ const SignupPage = () => {
   };
   
   const handleFinalSubmit = async (e) => {
-  e.preventDefault();
-  setFinalSubmitError('');
+    e.preventDefault();
+    setFinalSubmitError('');
 
-  if (!isEmailOtpVerified) {
-    setFinalSubmitError("Please verify email verification code first.");
-    return;
-  }
+    if (!isEmailOtpVerified) {
+      setFinalSubmitError("Please verify email verification code first.");
+      return;
+    }
 
-  setIsLoading(true);
+    setIsLoading(true);
 
-  try {
-    const { confirmPassword, terms, communications, ...payload } = formData;
+    try {
+      const { confirmPassword, terms, communications, cityid, stateid, ...payload } = formData;
+      // Send city and state names, exclude cityid and stateid
+      payload.city = formData.city;
+      payload.state = formData.state;
+      await axios.post('/api/agents/signup', payload);
+      toast.success('Successfully registered your account!', { autoClose: 3000 });
+      setTimeout(() => navigate('/login'), 4000);
+    } catch (err) {
+      console.error('Registration failed:', err);
+      setFinalSubmitError(`Registration failed: ${err.response?.data?.error || 'An unknown error occurred.'}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    const response = await axios.post('/api/agents/signup', payload);
-
-    toast.success('Successfully registered your account!', { autoClose: 3000 });
-
-    setTimeout(() => navigate('/login'), 4000);
-
-  } catch (err) {
-    console.error('Registration failed:', err);
-    setFinalSubmitError(`Registration failed: ${err.response?.data?.error || 'An unknown error occurred.'}`);
-  } finally {
-    setIsLoading(false);
-  }
-};
 
   const handleCodeChange = (e, index) => {
     const { value } = e.target;
@@ -455,7 +320,6 @@ const SignupPage = () => {
         inputRefs.current[index + 1].focus();
     }
 
-    // Verify whenever all 6 digits are complete, regardless of which box was last edited
     if (newCode.every(digit => digit)) {
         handleVerifyOtp('email', newCode);
     }
@@ -467,6 +331,7 @@ const SignupPage = () => {
       inputRefs.current[index - 1].focus();
     }
   };
+
 
   return (
     <div className={`flex flex-col items-center justify-center bg-[#121212] text-white font-sans ${showOtpPopup ? 'filter backdrop-blur-sm' : ''}`}>
@@ -501,64 +366,79 @@ const SignupPage = () => {
               <input type="tel" name="phone_number" value={formData.phone_number} onChange={handleChange} className={`w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600 ${validationErrors.phone_number ? 'border-2 border-red-500' : ''}`} placeholder="Enter your phone number" maxLength="10" required/>
               {validationErrors.phone_number && <p className="text-red-500 text-sm mt-1">{validationErrors.phone_number}</p>}
             </div>
-            <div>
+            <div className="md:col-span-2">
               <label className="block text-sm text-gray-400 mb-1">Company Name</label>
               <input type="text" name="company_name" value={formData.company_name} onChange={handleChange} className={`w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600 ${validationErrors.company_name ? 'border-2 border-red-500' : ''}`} placeholder="Enter your company name" required/>
               {validationErrors.company_name && <p className="text-red-500 text-sm mt-1">{validationErrors.company_name}</p>}
             </div>
-            <div>
+            <div className="md:col-span-2">
               <label className="block text-sm text-gray-400 mb-1">Address</label>
               <input type="text" name="address" value={formData.address} onChange={handleChange} className={`w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600 ${validationErrors.address ? 'border-2 border-red-500' : ''}`} placeholder="Enter your address" required/>
               {validationErrors.address && <p className="text-red-500 text-sm mt-1">{validationErrors.address}</p>}
             </div>
 
-            <div className="relative">
-              <label className="block text-sm text-gray-400 mb-1">City</label>
-              <div className="relative">
-                <input
-                  type="text"
-                  name="city"
-                  value={citySearchInput}
-                  onChange={handleCitySearchChange}
-                  onFocus={() => setShowLocationSuggestions(true)}
-                  onBlur={() => setTimeout(() => setShowLocationSuggestions(false), 200)}
-                  className={`w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600 ${validationErrors.city ? 'border-2 border-red-500' : ''}`}
-                  placeholder=""
-                  autoComplete="off"
-                />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                  <FaChevronDown className="w-4 h-4" />
-                </span>
-              </div>
-              {showLocationSuggestions && filteredLocations.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-[#2c2c2c] rounded-md shadow-lg max-h-48 overflow-y-auto custom-scrollbar">
-                  {filteredLocations.map((item, index) => (
-                    <div 
-                      key={index} 
-                      onMouseDown={() => handleCitySelect(item.city, item.state)} 
-                      className="p-2 cursor-pointer hover:bg-[#3c3c3c]"
-                    >
-                      {item.city}, {item.state}
-                    </div>
-                  ))}
-                </div>
-              )}
-              {validationErrors.city && <p className="text-red-500 text-sm mt-1">{validationErrors.city}</p>}
-            </div>
-
-            <div className="relative">
+            {/* MODIFIED: State and City Selectors */}
+            <div className="dynamic-select-wrapper">
               <label className="block text-sm text-gray-400 mb-1">State</label>
-              <input
-                type="text"
-                name="state"
-                value={formData.state}
-                className={`w-full bg-[#2c2c2c] text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600 ${validationErrors.state ? 'border-2 border-red-500' : ''}`}
-                placeholder=""
-                readOnly
-                disabled
+              <StateSelect
+                countryid={US_COUNTRY_ID}
+                onChange={handleStateChange}
+                placeHolder="Select State"
+                value={formData.stateid}
               />
               {validationErrors.state && <p className="text-red-500 text-sm mt-1">{validationErrors.state}</p>}
             </div>
+
+            <div className="dynamic-select-wrapper">
+              <label className="block text-sm text-gray-400 mb-1">City</label>
+              <CitySelect
+                name='city'
+                countryid={US_COUNTRY_ID}
+                stateid={formData.stateid}
+                onChange={handleCityChange}
+                placeHolder="Select City"
+                value={formData.cityid}
+                disabled={!formData.stateid}
+              />
+              {validationErrors.city && <p className="text-red-500 text-sm mt-1">{validationErrors.city}</p>}
+            </div>
+
+            {/* CSS to fix dropdown background and text color */}
+            <style jsx global>{`
+              .stdropdown-menu {
+                position: absolute;
+                transform: translateY(4px);
+                width: 100%;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                overflow: auto;
+                max-height: 150px;
+                background-color: #060606ff;
+                z-index: 99;
+              }
+              .dynamic-select-wrapper .select {
+                background-color: #2c2c2c !important;
+                color: white !important;
+                border-radius: 0.375rem;
+                padding: 0.75rem;
+                border: none;
+                width: 100%;
+              }
+              .dynamic-select-wrapper .select:focus {
+                outline: none;
+                box-shadow: 0 0 0 2px #d97706 !important; /* Corresponds to focus:ring-yellow-600 */
+              }
+              .dynamic-select-wrapper .list,
+              .dynamic-select-wrapper .list-item {
+                background-color: #2c2c2c !important;
+                color: white !important;
+                border: 1px solid #3c3c3c;
+              }
+              .dynamic-select-wrapper .list-item:hover {
+                background-color: #3c3c3c !important;
+                color: white !important;
+              }
+            `}</style>
             
             <div className="col-span-1 md:col-span-1">
               <label className="block text-sm text-gray-400 mb-1">Password</label>
@@ -644,6 +524,7 @@ const SignupPage = () => {
               {validationErrors.confirmPassword && <p className="text-red-500 text-sm mt-1">{validationErrors.confirmPassword}</p>}
             </div>
 
+
             <div className="flex items-center mt-4 col-span-full">
               <input type="checkbox" id="terms" name="terms" checked={formData.terms} onChange={handleChange} className={`mr-2 accent-yellow-600 ${validationErrors.terms ? 'border-2 border-red-500' : ''}`} required />
               <label htmlFor="terms" className="text-gray-400 text-sm">
@@ -652,12 +533,14 @@ const SignupPage = () => {
             </div>
             {validationErrors.terms && <p className="text-red-500 text-sm col-span-full">{validationErrors.terms}</p>}
 
+
             <div className="flex items-center col-span-full">
               <input type="checkbox" id="communications" name="communications" checked={formData.communications} onChange={handleChange} className="mr-2 accent-yellow-600" />
               <label htmlFor="communications" className="text-gray-400 text-sm">
                 Send me product updates and marketing communications
               </label>
             </div>
+
 
             <button
               type="button"
@@ -669,6 +552,7 @@ const SignupPage = () => {
             </button>
           </form>
 
+
           <div className="flex items-center my-6">
             <hr className="flex-1 border-gray-700" />
             <span className="mx-4 text-gray-500 text-sm">or</span>
@@ -679,6 +563,7 @@ const SignupPage = () => {
             Already have an account? <a href="#" className="text-white hover:underline" onClick={() => navigate('/login')}>Sign in</a>
           </div>
         </div>
+
 
         <div className="flex justify-center space-x-4 mt-10">
           <div className="flex flex-col items-center bg-[#1e1e1e] border border-gray-700 p-4 rounded-lg w-32">
@@ -698,6 +583,7 @@ const SignupPage = () => {
           </div>
         </div>
 
+
       </div>
       
       <div className="w-full text-center text-gray-500 text-xs py-4">
@@ -712,6 +598,7 @@ const SignupPage = () => {
         <a href="#" className="hover:underline">Contact Support</a>
       </div>
 
+
       {showOtpPopup && (
         <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm position-relative top-20">
           <div className="bg-[#1e1e1e] p-8 rounded-lg shadow-xl w-full max-w-sm text-white relative" style={{position: "absolute", top: "5%"}}>
@@ -722,6 +609,7 @@ const SignupPage = () => {
             <p className="text-gray-400 text-sm text-center mb-6">
               A verification code has been sent to your email.
             </p>
+
 
             <div className="space-y-4 mb-6">
               <label className="block text-sm text-gray-400">Email Verification Code</label>
@@ -753,6 +641,7 @@ const SignupPage = () => {
               </div>
             </div>
 
+
             <button
               type="button"
               onClick={handleFinalSubmit}
@@ -765,6 +654,30 @@ const SignupPage = () => {
           </div>
         </div>
       )}
+
+      {/* Optional: Add custom styles to your global CSS or here to match your theme */}
+      <style jsx global>{`
+        .dynamic-select-wrapper .select {
+          background-color: #2c2c2c;
+          color: white;
+          border-radius: 0.375rem;
+          padding: 0.75rem;
+          border: none;
+          width: 100%;
+        }
+        .dynamic-select-wrapper .select:focus {
+          outline: none;
+          box-shadow: 0 0 0 2px #d97706; /* Corresponds to focus:ring-yellow-600 */
+        }
+        .dynamic-select-wrapper .list {
+          background-color: #2c2c2c;
+          color: white;
+          border: 1px solid #3c3c3c;
+        }
+        .dynamic-select-wrapper .list-item:hover {
+          background-color: #3c3c3c;
+        }
+      `}</style>
     </div>
   );
 };

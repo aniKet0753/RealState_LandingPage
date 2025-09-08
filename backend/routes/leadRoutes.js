@@ -6,7 +6,7 @@ const aiLeadController = require('../controllers/aileadController');
 const authenticateToken = require('../middleware/auth');
 const validate = require('../middleware/validation');
 const { addLeadSchema } = require('../schemas/leadSchema');
-const { bulkUploadLeads } = require('../controllers/leadController');
+const { bulkUploadLeads, saveFilteredLeadsController } = require('../controllers/leadController');
 
 // Configure multer for file storage
 // Using memory storage for smaller files or disk storage for larger ones
@@ -31,5 +31,9 @@ router.get('/filtered', authenticateToken, leadController.getFilteredLeads);
 // Route to get a single lead by ID
 // Example: /api/leads/123e4567-e89b-12d3-a456-426614174000
 router.get('/:id', authenticateToken, leadController.getLeadById);
+
+// POST /api/saved-leads
+router.post('/saved-leads', authenticateToken, saveFilteredLeadsController);
+
 
 module.exports = router;

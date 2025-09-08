@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from '../api'; // Import Axios
-import { Search, Plus, Filter, Download, MoreHorizontal, ChevronDown, X } from 'lucide-react';
+import { Search, Save, Plus, Filter, Download, MoreHorizontal, ChevronDown, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const LeadPage = () => {
@@ -16,6 +16,7 @@ const LeadPage = () => {
   const [sourceFilter, setSourceFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const filterRef = useRef(null);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -106,6 +107,41 @@ const LeadPage = () => {
     setSearchTerm('');
     setCurrentPage(1);
   };
+
+  // function to send filtered leads and criteria to backend
+
+  const confirmSaveFilteredLeads = () => {
+    setShowConfirm(true);
+  };
+
+  const cancelSave = () => {
+    setShowConfirm(false);
+  };
+
+  const doSaveFilteredLeads = async () => {
+    setShowConfirm(false); // hide popup first
+    try {
+      const payload = {
+        filters: {
+          status: statusFilter,
+          source: sourceFilter,
+          search: searchTerm,
+        },
+        leadIds: leads.map((lead) => lead.id),
+      };
+
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+
+      await axios.post('/api/leads/saved-leads', payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      alert('Filtered leads list saved successfully.');
+    } catch (error) {
+      console.error('Failed to save filtered leads:', error);
+      alert('Failed to save filtered leads list.');
+    }
+  };
+
 
   const renderPaginationButtons = () => {
     const pages = [];
@@ -214,6 +250,16 @@ const LeadPage = () => {
               </div>
             )}
           </div>
+
+          <button
+            onClick={confirmSaveFilteredLeads}
+            className={`text-slate-400 text-sm flex items-center space-x-2 border border-slate-600 rounded hover:bg-slate-800 whitespace-nowrap ${
+              isMobile ? 'px-2 py-1' : 'px-3 py-2'
+            }`}
+          >
+            <Save size={14} />
+            <span>Save Filtered List</span>
+          </button>
 
           <button
             className={`text-slate-400 text-sm flex items-center space-x-2 border border-slate-600 rounded hover:bg-slate-800 whitespace-nowrap ${
@@ -417,6 +463,37 @@ const LeadPage = () => {
           </div>
         </div>
       </div>
+
+      {showConfirm && (
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50"
+          style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.3)', // translucent dark overlay
+            backdropFilter: 'blur(8px)',          // blur effect
+            WebkitBackdropFilter: 'blur(8px)',   // for Safari support
+          }}
+        >
+          <div className="bg-slate-800 rounded p-6 max-w-sm w-full text-white">
+            <h3 className="text-lg font-semibold mb-4">Confirm Save</h3>
+            <p className="mb-6">Are you sure you want to save this filtered leads list?</p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={cancelSave}
+                className="px-4 py-2 bg-gray-600 rounded hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={doSaveFilteredLeads}
+                className="px-4 py-2 bg-green-600 rounded hover:bg-green-700"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

@@ -324,3 +324,32 @@ exports.getLeadById = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+exports.saveFilteredLeadsController = async (req, res) => {
+  const userId = req.user.userId; // Set by authenticateUser middleware
+  const { filters, leadIds } = req.body;
+
+  if (!Array.isArray(leadIds)) {
+    return res.status(400).json({ message: 'leadIds must be an array' });
+  }
+
+  try {
+    const { data, error } = await supabase.from('saved_leads_lists').insert([
+      {
+        user_id: userId,
+        filters,
+        lead_ids: leadIds,
+      },
+    ]);
+
+    if (error) {
+      console.error('Supabase insert error:', error);
+      return res.status(500).json({ message: 'Failed to save filtered leads' });
+    }
+
+    return res.status(201).json({ message: 'Filtered leads list saved successfully', data });
+  } catch (err) {
+    console.error('Controller error:', err);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};

@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 const AIAssistant = () => {
   const [chatHistory, setChatHistory] = useState([
-    { from: 'ai', text: "Hi! Let's create a new lead. What is the lead's first name?" }
+    { from: 'ai', text: "Hi there! I’m your AI assistant. How can I help you today?\nYou can start by telling me what you’d like to do or ask any questions." }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [sessionId] = useState(uuidv4());
