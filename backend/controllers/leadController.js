@@ -327,7 +327,7 @@ exports.getLeadById = async (req, res) => {
 
 exports.saveFilteredLeadsController = async (req, res) => {
   const userId = req.user.userId; // Set by authenticateUser middleware
-  const { filters, leadIds } = req.body;
+  const { filters, leadIds, listName } = req.body;
 
   if (!Array.isArray(leadIds)) {
     return res.status(400).json({ message: 'leadIds must be an array' });
@@ -339,6 +339,7 @@ exports.saveFilteredLeadsController = async (req, res) => {
         user_id: userId,
         filters,
         lead_ids: leadIds,
+        listName,
       },
     ]);
 

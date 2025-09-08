@@ -24,7 +24,7 @@ const Navbar = ({ toggleSidebar, toggleAIAssistant, isMobile, isTablet }) => {
   };
 
   return (
-    <div className="flex items-center justify-between p-3 md:p-4 bg-slate-900 border-b border-slate-700 relative z-30">
+    <div className="flex items-center justify-between p-3 md:p-4 bg-black border-b border-slate-700 relative z-30">
       <div className="flex items-center">
         <button onClick={toggleSidebar} className="text-slate-400 mr-3 md:mr-4 hover:text-slate-300">
           <Menu size={isMobile ? 18 : 20} />
@@ -38,7 +38,7 @@ const Navbar = ({ toggleSidebar, toggleAIAssistant, isMobile, isTablet }) => {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={16} />
           <input 
             type="text" 
-            placeholder="Search leads..." 
+            placeholder="Search" 
             className={`bg-slate-800 text-white text-sm rounded py-2 pl-10 pr-4 border border-slate-600 focus:outline-none focus:border-slate-500 ${
               isTablet ? 'w-48' : 'w-80'
             }`}
@@ -86,7 +86,7 @@ const Navbar = ({ toggleSidebar, toggleAIAssistant, isMobile, isTablet }) => {
                 onClick={() => setIsDropdownOpen(false)}
                 className="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white"
               >
-                Add Bulk Lead (Spreadsheet)
+                Bulk Upload
               </Link>
             </div>
           )}

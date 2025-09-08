@@ -27,7 +27,7 @@ const DashboardPage = ({ isMobile, isTablet, closePanels }) => {
   ];
 
   return (
-    <div className="flex-1 flex flex-col overflow-y-auto bg-slate-900 p-3 md:p-6">
+    <div className="flex-1 flex flex-col overflow-y-auto bg-black p-3 md:p-6">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 md:mb-6 space-y-3 md:space-y-0">
         <h1 className={`font-medium text-white ${isMobile ? 'text-xl' : 'text-2xl'}`}>Lead Management</h1>
         <div className="flex items-center space-x-2 md:space-x-3 overflow-x-auto">
@@ -59,7 +59,7 @@ const DashboardPage = ({ isMobile, isTablet, closePanels }) => {
         isMobile ? 'grid-cols-2' : isTablet ? 'grid-cols-2' : 'grid-cols-4'
       }`}>
         {statCards.map((card, index) => (
-          <div key={index} className="bg-slate-800 p-3 md:p-4 rounded border border-slate-700">
+          <div key={index} className="bg-[#1e1e1e] p-3 md:p-4 rounded border border-slate-700">
             <div className={`text-slate-500 mb-1 ${isMobile ? 'text-xs' : 'text-sm'}`}>{card.title}</div>
             <div className="flex items-end justify-between">
               <div className={`font-medium text-white ${isMobile ? 'text-lg' : 'text-2xl'}`}>{card.value}</div>
@@ -78,7 +78,7 @@ const DashboardPage = ({ isMobile, isTablet, closePanels }) => {
         {/* The new AIAssistant component replaces the old code block */}
         <AIAssistant isMobile={isMobile} />
 
-        <div className="bg-slate-800 rounded border border-slate-700 p-3 md:p-4">
+        <div className="bg-black rounded border border-slate-700 p-3 md:p-4">
           <div className="flex justify-between items-center mb-4">
             <h2 className={`text-white ${isMobile ? 'text-base' : 'text-lg'}`}>Today's Tasks</h2>
             <button className={`bg-slate-600 text-white text-sm rounded font-medium hover:bg-slate-500 flex items-center space-x-1 ${
@@ -90,7 +90,7 @@ const DashboardPage = ({ isMobile, isTablet, closePanels }) => {
           </div>
           <div className="space-y-2 md:space-y-3">
             {tasks.map((task, index) => (
-              <div key={index} className="flex items-start space-x-3 p-2 md:p-3 bg-slate-700 rounded border border-slate-600">
+              <div key={index} className="flex items-start space-x-3 p-2 md:p-3 bg-[#1e1e1e] rounded border border-slate-600">
                 <input 
                   type="checkbox" 
                   className="mt-1 rounded border-slate-500 bg-slate-600" 
@@ -113,7 +113,7 @@ const DashboardPage = ({ isMobile, isTablet, closePanels }) => {
         </div>
       </div>
 
-      <div className="mt-9 bg-slate-800 rounded border border-slate-700 p-3 md:p-4 mb-4 md:mb-6">
+      <div className="mt-9 bg-[#1e1e1e] rounded border border-slate-700 p-3 md:p-4 mb-4 md:mb-6">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 space-y-3 md:space-y-0">
           <h2 className={`text-white ${isMobile ? 'text-base' : 'text-lg'}`}>Lead Overview</h2>
           <div className="relative">

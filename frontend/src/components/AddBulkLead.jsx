@@ -73,7 +73,7 @@ const AddBulkLeadPage = () => {
   return (
     <div className="flex-1 p-4 md:p-8 overflow-auto bg-slate-900 text-slate-300">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Add Bulk Leads</h1>
+        <h1 className="text-3xl font-bold">Bulk Upload</h1>
         <button className="text-slate-400 hover:text-white flex items-center space-x-2" onClick={() => navigate('/leads')}>
           <ArrowLeft size={24} /> <span>Back to Leads</span>
         </button>
