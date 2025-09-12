@@ -5,7 +5,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 const menuItems = [
   { name: 'Dashboard', icon: <TrendingUp size={18} />, link: '/dashboard' },
   { name: 'Leads', icon: <User size={18} />, link: '/leads' },
-  { name: 'Opportunities', icon: <Briefcase size={18} />, link: '/pportunities' }, // keep as-is
+  { name: 'Workflow', icon: <Briefcase size={18} />, link: '/workflow' },
   { name: 'Appointments', icon: <Calendar size={18} />, link: '/appointments' },
   { name: 'Phone agent', icon: <Phone size={18} />, link: '/ai/phone-agent' },
   {

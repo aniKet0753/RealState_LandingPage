@@ -42,6 +42,8 @@ const LeadPage = () => {
       if (key === 'name') return `${lead.first_name || ''} ${lead.last_name || ''}`.trim(); // combine first/last [1]
       if (key === 'status') return lead.status || ''; // status string [1]
       if (key === 'source') return lead.source || ''; // source string [1]
+      // ADDED: handle email_stage for sorting
+      if (key === 'email_stage') return lead.email_stage || ''; // email_stage string [1]
       return '';
     };
     const mul = dir === 'asc' ? 1 : -1; // direction multiplier [1]
@@ -99,7 +101,13 @@ const LeadPage = () => {
         });
 
         const incoming = response.data.leads || []; // safety default [1]
-        const sorted = sortLeadsClient(incoming, sortBy, sortDir); // always sort client-side for consistency [1]
+        // ADDED: ensure email_stage is included in the fetched data
+        const processedLeads = incoming.map(lead => ({
+          ...lead,
+          // Assuming your backend returns email_stage, otherwise you'll need to map it
+          email_stage: lead.email_stage || 'N/A' // Default to 'N/A' if not present
+        }));
+        const sorted = sortLeadsClient(processedLeads, sortBy, sortDir); // always sort client-side for consistency [1]
         setLeads(sorted); // set sorted data [1]
         setTotalLeads(response.data.totalLeads); // keep totals [1]
         setTotalPages(response.data.totalPages); // keep pagination [1]
@@ -384,13 +392,151 @@ const LeadPage = () => {
         ) : isMobile ? (
           // mobile cards remain unchanged
           <div className="space-y-3">
-            {leads.map(lead => (
-              // Leads listing as per your code with initials intact
-              <div key={lead.id} className="bg-slate-700 p-3 rounded border border-slate-600">
-                {/* ... */}
-                {/* no changes needed here */}
-              </div>
-            ))}
+            <div className="overflow-x-auto w-full">
+    <table className="min-w-[700px] w-full">
+      <thead>
+        <tr className="text-left text-slate-500 text-sm border-b border-slate-700">
+          <th className="pb-3 pr-4 hidden sm:table-cell">
+            <input type="checkbox" className="rounded border-slate-600 bg-slate-700" />
+          </th>
+
+          <th
+            className="pb-3 pr-4 cursor-pointer hover:text-slate-300 select-none"
+            onClick={() => toggleSort('name')}
+            title="Sort by Name"
+          >
+            <div className="flex items-center space-x-1">
+              <span className={sortBy === 'name' ? 'text-white' : ''}>Name</span>
+              <ChevronDown
+                size={14}
+                className={`transition-transform ${
+                  sortBy === 'name' ? (sortDir === 'asc' ? 'rotate-180' : '') : 'opacity-40'
+                }`}
+              />
+            </div>
+          </th>
+
+          <th className="pb-3 pr-4">Email</th>
+
+          <th className="pb-3 pr-4">
+            <div className="flex items-center space-x-1">
+              <span>Phone</span>
+            </div>
+          </th>
+
+          <th
+            className="pb-3 pr-4 cursor-pointer hover:text-slate-300 select-none"
+            onClick={() => toggleSort('status')}
+            title="Sort by Status"
+          >
+            <div className="flex items-center space-x-1">
+              <span className={sortBy === 'status' ? 'text-white' : ''}>Status</span>
+              <ChevronDown
+                size={14}
+                className={`transition-transform ${
+                  sortBy === 'status' ? (sortDir === 'asc' ? 'rotate-180' : '') : 'opacity-40'
+                }`}
+              />
+            </div>
+          </th>
+
+          <th
+            className="pb-3 pr-4 cursor-pointer hover:text-slate-300 select-none"
+            onClick={() => toggleSort('source')}
+            title="Sort by Source"
+          >
+            <div className="flex items-center space-x-1">
+              <span className={sortBy === 'source' ? 'text-white' : ''}>Source</span>
+              <ChevronDown
+                size={14}
+                className={`transition-transform ${
+                  sortBy === 'source' ? (sortDir === 'asc' ? 'rotate-180' : '') : 'opacity-40'
+                }`}
+              />
+            </div>
+          </th>
+
+          {/* ADDED: Email Stage Column */}
+          <th
+            className="pb-3 pr-4 cursor-pointer hover:text-slate-300 select-none"
+            onClick={() => toggleSort('email_stage')}
+            title="Sort by Email Stage"
+          >
+            <div className="flex items-center space-x-1">
+              <span className={sortBy === 'email_stage' ? 'text-white' : ''}>Email Stage</span>
+              <ChevronDown
+                size={14}
+                className={`transition-transform ${
+                  sortBy === 'email_stage' ? (sortDir === 'asc' ? 'rotate-180' : '') : 'opacity-40'
+                }`}
+              />
+            </div>
+          </th>
+
+
+          <th className="pb-3 pr-4 hidden sm:table-cell">Last Contact</th>
+
+          <th className="pb-3">Actions</th>
+        </tr>
+      </thead>
+
+        <tbody>
+          {leads.map((lead) => (
+            <tr
+              key={lead.id}
+              className="border-b border-slate-700 hover:bg-slate-700 transition-colors"
+            >
+              <td className="py-3 pr-4 hidden sm:table-cell">{/* checkbox if needed */}</td>
+
+              <td className="py-3 pr-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center text-xs text-white">
+                    {lead.first_name[0]}
+                    {lead.last_name[0]}
+                  </div>
+                  <div>
+                    <div className="text-white text-sm">
+                      {lead.first_name} {lead.last_name}
+                    </div>
+                    <div className="text-slate-500 text-xs">{lead.type}</div>
+                  </div>
+                </div>
+              </td>
+
+              <td className="py-3 pr-4 text-slate-400 text-sm">{lead.email}</td>
+
+              <td className="py-3 pr-4 text-slate-400 text-sm">{formatPhoneNumber(lead.phone_number)}</td>
+
+              <td className="py-3 pr-4">
+                <span className="px-2 py-1 rounded text-xs border border-slate-500 text-slate-300 bg-slate-700">
+                  {lead.status}
+                </span>
+              </td>
+
+              <td className="py-3 pr-4 text-slate-400 text-sm">
+                {lead.source}
+              </td>
+
+              {/* ADDED: Display Email Stage */}
+              <td className="py-3 pr-4 text-slate-400 text-sm">
+                {lead.email_stage}
+              </td>
+
+              <td className="py-3 pr-4 text-slate-400 text-sm hidden sm:table-cell">
+                {new Date(lead.created_at).toLocaleDateString()}
+              </td>
+
+              <td className="py-3">
+                <button className="text-slate-400 hover:text-white">
+                  <MoreHorizontal size={16} />
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -462,6 +608,26 @@ const LeadPage = () => {
                     </th>
                   )}
 
+                  {/* ADDED: Email Stage Header */}
+                  {!isTablet && (
+                    <th
+                      className="pb-3 pr-4 cursor-pointer hover:text-slate-300 select-none"
+                      onClick={() => toggleSort('email_stage')}
+                      title="Sort by Email Stage"
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span className={sortBy === 'email_stage' ? 'text-white' : ''}>Email Stage</span>
+                        <ChevronDown
+                          size={14}
+                          className={`transition-transform ${
+                            sortBy === 'email_stage' ? (sortDir === 'asc' ? 'rotate-180' : '') : 'opacity-40'
+                          }`}
+                        />
+                      </div>
+                    </th>
+                  )}
+
+
                   {!isTablet && <th className="pb-3 pr-4">Last Contact</th>}
                   <th className="pb-3">Actions</th>
                 </tr>
@@ -490,6 +656,13 @@ const LeadPage = () => {
                       </span>
                     </td>
                     {!isTablet && <td className="py-3 pr-4 text-slate-400 text-sm">{lead.source}</td>}
+                    {/* ADDED: Display Email Stage */}
+                    {!isTablet && (
+                      <td className="py-3 pr-4 text-slate-400 text-sm">
+                        {lead.email_stage}
+                      </td>
+                    )}
+
                     {!isTablet && <td className="py-3 pr-4 text-slate-400 text-sm">{new Date(lead.created_at).toLocaleDateString()}</td>}
                     <td className="py-3">
                       <button className="text-slate-400 hover:text-white">

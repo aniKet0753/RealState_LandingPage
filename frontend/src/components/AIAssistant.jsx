@@ -95,7 +95,8 @@ const AIAssistant = () => {
           value={inputValue}
           onChange={e => setInputValue(e.target.value)}
           placeholder="Type your message..."
-          className="flex-1 px-3 py-2 rounded bg-[#1e1e1e] text-white border border-slate-600"
+          // className="flex-1 px-3 py-2 rounded bg-[#1e1e1e] text-white border border-slate-600"
+          className="flex-1 px-3 py-2 rounded bg-[#1e1e1e] text-white border border-slate-600 text-base w-full min-w-0"
           onKeyDown={e => e.key === 'Enter' && handleSend()}
         />
         <button onClick={handleSend}>

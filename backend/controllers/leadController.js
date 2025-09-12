@@ -2,6 +2,7 @@ const { Readable } = require('stream');
 const csv = require('csv-parser');
 const supabase = require('../db/supabaseClient');
 const { addLeadSchema } = require('../schemas/leadSchema');
+const { sendMail, scheduleLeadEmails } = require("../mailer");
 
 // Define required headers for the CSV file
 const REQUIRED_HEADERS = [
@@ -145,7 +146,8 @@ exports.addLead = async (req, res) => {
         bedrooms,
         bathrooms,
         timeline,
-        social_media
+        social_media,
+        sendEmail,
     } = req.body;
 
     console.log(req.body);
@@ -175,6 +177,32 @@ exports.addLead = async (req, res) => {
 
         if (error) {
             throw error;
+        }
+
+        const fullName = `${first_name} ${last_name}`;
+        let city = preferred_location;
+
+        if(city == undefined || !city){
+            city = 'your city';
+        }
+        
+        if (sendEmail) {
+            const fullName = `${first_name} ${last_name}`;
+            const city = preferred_location;
+
+            await sendMail(
+                fullName,
+                "Welcome To Real Estate",
+                `It was great to meet you, ${fullName}.  
+We’ll help you find the best property in ${city}.  
+Please save my contact info so we can stay in touch.  
+Talk soon!  
+Michael K`,
+                email,
+                "Stage 1"
+            );
+
+            scheduleLeadEmails(fullName, email, city);
         }
 
         res.status(201).json({ message: 'Lead added successfully.', lead: data[0] });

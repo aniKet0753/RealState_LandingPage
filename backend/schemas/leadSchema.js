@@ -28,7 +28,10 @@ const addLeadSchema = Joi.object({
       platform: Joi.string().required(),
       handle: Joi.string().required()
     })
-  ).optional()
+  ).optional(), 
+
+  sendEmail: Joi.boolean().required()
+
 });
 
 module.exports = {

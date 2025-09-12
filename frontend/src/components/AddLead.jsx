@@ -107,8 +107,13 @@ const AddLeadPage = () => {
         (social) => social.platform && social.handle
       );
 
-      const payload = buildPayload(formData);
+      const doAddWorkflow = window.confirm("Do you also want to add a workflow to this lead?");
 
+      let payload = buildPayload(formData);
+      payload = {
+        ...payload,
+        sendEmail: doAddWorkflow,
+      }
       const response = await axios.post('/api/leads', payload, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token') || sessionStorage.getItem('token')}`
