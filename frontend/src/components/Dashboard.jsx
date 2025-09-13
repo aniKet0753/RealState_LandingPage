@@ -25,7 +25,7 @@ const DashboardPage = ({ isMobile, isTablet, closePanels }) => {
   ];
 
   return (
-    <div className="flex-1 flex flex-col overflow-y-auto bg-black p-3 md:p-6 min-h-screen">
+    <div className="flex-1 flex flex-col overflow-y-auto bg-[#0B0B0B] p-3 md:p-6 min-h-screen">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 md:mb-6 space-y-3 md:space-y-0">
         <h1 className={`font-medium text-white ${isMobile ? 'text-xl' : 'text-2xl'}`}>Dashboard</h1>
@@ -87,7 +87,7 @@ const DashboardPage = ({ isMobile, isTablet, closePanels }) => {
         <div className="flex-1 min-w-0">
           <AIAssistant isMobile={isMobile} />
         </div>
-        <div className="flex-1 min-w-0 bg-black rounded border border-slate-700 p-3 md:p-4">
+        <div className="flex-1 min-w-0 bg-[#0B0B0B] rounded border border-slate-700 p-3 md:p-4">
           <div className="flex justify-between items-center mb-4">
             <h2 className={`text-white ${isMobile ? 'text-base' : 'text-lg'}`}>Today's Tasks</h2>
             <button
