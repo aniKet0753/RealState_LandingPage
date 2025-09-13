@@ -139,7 +139,7 @@ const AddLeadPage = () => {
   const notificationClass = notification.type === 'success' ? 'bg-green-500' : 'bg-red-500';
 
   return (
-    <div className="flex-1 p-4 md:p-8 overflow-auto bg-slate-900 text-slate-300">
+    <div className="flex-1 p-4 md:p-8 overflow-auto bg-slate-900 text-slate-300"  style={{ backgroundColor: '#0b0b0b'  , color : "white"}}>
       {notification.message && (
         <div className={`fixed top-4 right-4 z-50 p-4 rounded-md text-white shadow-lg ${notificationClass}`}>
           {notification.message}
@@ -152,12 +152,12 @@ const AddLeadPage = () => {
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-slate-800 p-4 md:p-8 rounded-lg">
+      <form onSubmit={handleSubmit} className="bg-slate-800 p-4 md:p-8 rounded-lg" style={{ backgroundColor: '#1C1C1C' }}>
         {/* Lead Type */}
         <div className="mb-6">
           <h2 className="text-xl font-semibold mb-4 text-white">Lead Type</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <label className={`p-4 rounded-md border border-slate-700 hover:bg-slate-700 cursor-pointer flex items-center space-x-2 transition-colors ${formData.leadType === 'Buyer' ? 'bg-slate-700 border-yellow-500' : ''}`}>
+            <label className={`p-4 rounded-md border border-slate-700 hover:bg-slate-700 cursor-pointer flex items-center space-x-2 transition-colors ${formData.leadType === 'Buyer' ? 'bg-slate-700 border-yellow-500' : ''}`} style={{ backgroundColor: '#4D4D4D' }}>
               <input
                 type="radio"
                 name="leadType"
@@ -165,6 +165,7 @@ const AddLeadPage = () => {
                 checked={formData.leadType === 'Buyer'}
                 onChange={handleChange}
                 className="accent-yellow-400"
+                style={{backgroundColor : 'grey'}}
                 required
               />
               <div>
@@ -172,7 +173,7 @@ const AddLeadPage = () => {
                 <div className="text-slate-400 text-sm">Looking to purchase property</div>
               </div>
             </label>
-            <label className={`p-4 rounded-md border border-slate-700 hover:bg-slate-700 cursor-pointer flex items-center space-x-2 transition-colors ${formData.leadType === 'Seller' ? 'bg-slate-700 border-yellow-500' : ''}`}>
+            <label className={`p-4 rounded-md border border-slate-700 hover:bg-slate-700 cursor-pointer flex items-center space-x-2 transition-colors ${formData.leadType === 'Seller' ? 'bg-slate-700 border-yellow-500' : ''}`} style={{ backgroundColor: '#4D4D4D' }}>
               <input
                 type="radio"
                 name="leadType"
@@ -187,7 +188,7 @@ const AddLeadPage = () => {
                 <div className="text-slate-400 text-sm">Looking to sell property</div>
               </div>
             </label>
-            <label className={`p-4 rounded-md border border-slate-700 hover:bg-slate-700 cursor-pointer flex items-center space-x-2 transition-colors ${formData.leadType === 'Investor' ? 'bg-slate-700 border-yellow-500' : ''}`}>
+            <label className={`p-4 rounded-md border border-slate-700 hover:bg-slate-700 cursor-pointer flex items-center space-x-2 transition-colors ${formData.leadType === 'Investor' ? 'bg-slate-700 border-yellow-500' : ''}`} style={{ backgroundColor: '#4D4D4D' }}>
               <input
                 type="radio"
                 name="leadType"
@@ -208,11 +209,11 @@ const AddLeadPage = () => {
         {/* Contact Information */}
         <div className="mb-6">
           <h2 className="text-xl font-semibold mb-4 text-white">Contact Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input type="text" name="firstName" value={formData.firstName} onChange={handleChange} placeholder="First Name *" className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" required />
-            <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} placeholder="Last Name *" className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" required />
-            <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email Address *" className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" required />
-            <input type="tel" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} placeholder="Phone Number *" className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" required />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4" >
+            <input type="text" name="firstName" value={formData.firstName} onChange={handleChange} placeholder="First Name *" className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" style={{ backgroundColor: '#4D4D4D' }}  required />
+            <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} placeholder="Last Name *" className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"style={{ backgroundColor: '#4D4D4D' }}  required />
+            <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email Address *" className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" style={{ backgroundColor: '#4D4D4D' }} required />
+            <input type="tel" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} placeholder="Phone Number *" className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" style={{ backgroundColor: '#4D4D4D' }} required />
           </div>
         </div>
 
@@ -220,7 +221,7 @@ const AddLeadPage = () => {
         <div className="mb-6">
           <h2 className="text-xl font-semibold mb-4 text-white">Property Preferences</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <select name="propertyType" value={formData.propertyType} onChange={handleChange} className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" >
+            <select name="propertyType" value={formData.propertyType} onChange={handleChange} className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"style={{ backgroundColor: '#4D4D4D' }} >
               <option value="">Select property type</option>
               <option value="House">House</option>
               <option value="Condo">Condo</option>
@@ -228,15 +229,15 @@ const AddLeadPage = () => {
               <option value="Land">Land</option>
               <option value="Other">Other</option>
             </select>
-            <select name="budgetRange" value={formData.budgetRange} onChange={handleChange} className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" >
+            <select name="budgetRange" value={formData.budgetRange} onChange={handleChange} className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" style={{ backgroundColor: '#4D4D4D' }} >
               <option value="">Select budget range</option>
               <option value="$100k - $250k">$100k - $250k</option>
               <option value="$250k - $500k">$250k - $500k</option>
               <option value="$500k - $1M">$500k - $1M</option>
               <option value="$1M+">$1M+</option>
             </select>
-            <input type="text" name="preferredLocation" value={formData.preferredLocation} onChange={handleChange} placeholder="City, neighborhood, or zip" className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" />
-            <select name="bedrooms" value={formData.bedrooms} onChange={handleChange} className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" >
+            <input type="text" name="preferredLocation" value={formData.preferredLocation} onChange={handleChange} placeholder="City, neighborhood, or zip" className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" style={{ backgroundColor: '#4D4D4D' }} />
+            <select name="bedrooms" value={formData.bedrooms} onChange={handleChange} className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" style={{ backgroundColor: '#4D4D4D' }} >
               <option value="">Bedrooms</option>
               <option value="1">1</option>
               <option value="2">2</option>
@@ -245,7 +246,7 @@ const AddLeadPage = () => {
               <option value="5">5</option>
               <option value="6">6</option>
             </select>
-            <select name="bathrooms" value={formData.bathrooms} onChange={handleChange} className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" >
+            <select name="bathrooms" value={formData.bathrooms} onChange={handleChange} className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" style={{ backgroundColor: '#4D4D4D' }} >
               <option value="">Bathrooms</option>
               <option value="1">1</option>
               <option value="2">2</option>
@@ -253,7 +254,7 @@ const AddLeadPage = () => {
               <option value="4">4</option>
               <option value="5">5</option>
             </select>
-            <select name="timeline" value={formData.timeline} onChange={handleChange} className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" >
+            <select name="timeline" value={formData.timeline} onChange={handleChange} className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" style={{ backgroundColor: '#4D4D4D' }}>
               <option value="">Timeline</option>
               <option value="Immediate">Immediate</option>
               <option value="1-3 months">1-3 months</option>
@@ -267,14 +268,14 @@ const AddLeadPage = () => {
         <div className="mb-6">
           <h2 className="text-xl font-semibold mb-4 text-white">Lead Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <select name="leadSource" value={formData.leadSource} onChange={handleChange} className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" >
+            <select name="leadSource" value={formData.leadSource} onChange={handleChange} className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"style={{ backgroundColor: '#4D4D4D' }} >
               <option value="Referral">Referral</option>
               <option value="SocialMedia">Social Media</option>
               <option value="Website">Website</option>
               <option value="Zillow">Zillow</option>
               <option value="Other">Other</option>
             </select>
-            <select name="leadStatus" value={formData.leadStatus} onChange={handleChange} className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" >
+            <select name="leadStatus" value={formData.leadStatus} onChange={handleChange} className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" style={{ backgroundColor: '#4D4D4D' }} >
               <option value="New">New</option>
               <option value="Nurturing">Nurturing</option>
               <option value="Qualified">Qualified</option>
@@ -282,7 +283,7 @@ const AddLeadPage = () => {
               <option value="Contacted">Contacted</option>
             </select>
           </div>
-          <textarea name="notes" value={formData.notes} onChange={handleChange} placeholder="Notes" className="w-full bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" rows="4"></textarea>
+          <textarea name="notes" value={formData.notes} onChange={handleChange} placeholder="Notes" className="w-full bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500" rows="4" style={{ backgroundColor: '#4D4D4D' }}></textarea>
         </div>
         
         {/* Social Media Section */}
@@ -293,6 +294,7 @@ const AddLeadPage = () => {
               type="button"
               onClick={handleAddSocialMedia}
               className="text-slate-400 hover:text-white flex items-center space-x-1"
+              
             >
               <PlusCircle size={20} />
               <span>Add More</span>
@@ -306,6 +308,7 @@ const AddLeadPage = () => {
                   value={social.platform}
                   onChange={(e) => handleSocialMediaChange(index, e)}
                   className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  style={{ backgroundColor: '#4D4D4D' }}
                 >
                   <option value="">Select Platform</option>
                   <option value="LinkedIn">LinkedIn</option>
@@ -323,6 +326,7 @@ const AddLeadPage = () => {
                   onChange={(e) => handleSocialMediaChange(index, e)}
                   placeholder="Handle (e.g., @johndoe)"
                   className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  style={{ backgroundColor: '#4D4D4D' }}
                 />
               </div>
               {formData.socialMedia.length > 1 && (
@@ -339,8 +343,8 @@ const AddLeadPage = () => {
         </div>
 
         <div className="flex justify-end space-x-4">
-          <button type="button" onClick={()=>{navigate('/leads')}} className="bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-md transition-colors">Cancel</button>
-          <button type="submit" disabled={isLoading} className="bg-slate-600 hover:bg-slate-500 text-white font-bold py-3 px-6 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          <button type="button" onClick={()=>{navigate('/leads')}} className="bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-md transition-colors" style={{ backgroundColor: '#4D4D4D' }}>Cancel</button>
+          <button type="submit" disabled={isLoading} className="bg-slate-600 hover:bg-slate-500 text-white font-bold py-3 px-6 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed" style={{ backgroundColor: '#FFAA09' , color : "black"}}>
             {isLoading ? 'Creating...' : 'Create Lead'}
           </button>
         </div>

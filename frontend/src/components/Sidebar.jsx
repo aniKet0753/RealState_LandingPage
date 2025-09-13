@@ -101,7 +101,7 @@ const Sidebar = ({ isSidebarOpen, closePanels, isMobile, isTablet, toggleSidebar
                   <Link
                     to={item.link}
                     className={`flex items-center space-x-3 px-3 py-2 rounded text-sm
-                      ${isActive(item.link) ? 'bg-slate-700 text-white' : 'text-slate-400 hover:bg-slate-800'}`}
+                      ${isActive(item.link) ? 'bg-[#222222] text-white' : 'text-slate-400 hover:bg-slate-800'}`}
                     onClick={closePanels}
                   >
                     <span className="shrink-0">{item.icon}</span>
@@ -133,7 +133,7 @@ const Sidebar = ({ isSidebarOpen, closePanels, isMobile, isTablet, toggleSidebar
 
           {/* AI Assistant card WITH Configure AI inside (kept as-is, minor responsive tweaks) */}
           <div className="mt-2 mx-3">
-            <div className="bg-slate-800 p-3 rounded">
+            <div className="bg-slate-800 p-3 rounded" style={{background:'#222222'}}>
               <div className="text-white text-sm font-medium mb-2">AI Assistant</div>
               <div className="text-slate-400 text-xs mb-3">
                 Leverage AI to qualify leads and automate follow-ups.

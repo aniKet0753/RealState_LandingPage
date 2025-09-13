@@ -48,7 +48,7 @@ const DashboardPage = ({ isMobile, isTablet, closePanels }) => {
           </button>
           <Link to="/add-lead" className="flex-shrink-0">
             <button
-              className={`bg-slate-600 text-white text-sm rounded font-medium hover:bg-slate-500 flex items-center space-x-2 whitespace-nowrap ${
+              className={`bg-[#222222] text-white text-sm rounded font-medium hover:bg-slate-500 flex items-center space-x-2 whitespace-nowrap ${
                 isMobile ? 'px-2 py-1' : 'px-4 py-2'
               }`}
             >

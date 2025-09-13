@@ -39,7 +39,7 @@ const Navbar = ({ toggleSidebar, toggleAIAssistant, isMobile, isTablet }) => {
           <input 
             type="text" 
             placeholder="Search" 
-            className={`bg-slate-800 text-white text-sm rounded py-2 pl-10 pr-4 border border-slate-600 focus:outline-none focus:border-slate-500 ${
+            className={`bg-[#222222] text-white text-sm rounded py-2 pl-10 pr-4 border border-slate-600 focus:outline-none focus:border-slate-500 ${
               isTablet ? 'w-48' : 'w-80'
             }`}
           />
@@ -52,7 +52,7 @@ const Navbar = ({ toggleSidebar, toggleAIAssistant, isMobile, isTablet }) => {
         
         <button 
           onClick={toggleAIAssistant}
-          className={`bg-slate-700 text-white text-sm rounded flex items-center space-x-1 md:space-x-2 hover:bg-slate-600 ${
+          className={`bg-[#222222] text-white text-sm rounded flex items-center space-x-1 md:space-x-2 hover:bg-[#222222] ${
             isMobile ? 'px-2 py-1' : 'px-4 py-2'
           }`}
         >
@@ -64,7 +64,7 @@ const Navbar = ({ toggleSidebar, toggleAIAssistant, isMobile, isTablet }) => {
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={handleToggleDropdown}
-            className={`bg-slate-600 text-white text-sm rounded font-medium hover:bg-slate-500 flex items-center space-x-1 md:space-x-2 ${
+            className={`bg-[#222222] border border-[#FFAA09] text-white text-sm rounded font-medium hover:bg-[#22222] flex items-center space-x-1 md:space-x-2 ${
               isMobile ? 'px-2 py-1' : 'px-4 py-2'
             }`}
           >
@@ -73,7 +73,7 @@ const Navbar = ({ toggleSidebar, toggleAIAssistant, isMobile, isTablet }) => {
           </button>
           
           {isDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-slate-800 rounded-md shadow-lg z-50 py-1">
+            <div className="absolute right-0 mt-2 w-48 bg-[#222222] rounded-md shadow-lg z-50 py-1">
               <Link 
                 to="/add-lead" 
                 onClick={() => setIsDropdownOpen(false)}

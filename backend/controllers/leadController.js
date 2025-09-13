@@ -178,17 +178,14 @@ exports.addLead = async (req, res) => {
         if (error) {
             throw error;
         }
-
-        const fullName = `${first_name} ${last_name}`;
-        let city = preferred_location;
-
-        if(city == undefined || !city){
-            city = 'your city';
-        }
         
         if (sendEmail) {
             const fullName = `${first_name} ${last_name}`;
-            const city = preferred_location;
+            let city = preferred_location;
+
+            if(city == undefined || !city){
+                city = 'your city';
+            }
 
             await sendMail(
                 fullName,
