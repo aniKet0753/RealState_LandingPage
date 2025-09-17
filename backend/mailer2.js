@@ -10,14 +10,11 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS,
   },
 });
-// Stage 1 - send immediately
+ // Stage 1 - send immediately
 
-
-async function sendSellerMail(name, subject, text, toEmail, stage) {
-
+ async function sendSellerMail(name, subject, text, toEmail, stage) {
   try {
-
-    let info = await transporter.sendMail({
+     let info = await transporter.sendMail({
       from: `<${process.env.EMAIL_USER}>`,
       to: toEmail,
       subject,
@@ -49,14 +46,23 @@ function scheduleSellerLeadEmails(name, email, city) {
 
   cron.schedule(cron4Days, () => {
     sendSellerMail(
-      name,
-      `Thanks for reaching out! Selling a home in ${city} can feel overwhelming, 
-but with the right plan, you’ll get the best price in the shortest time.
+      "The Secret to Selling Your Home for Top Dollar",
+      `Hi ${name},
 
-I’ll walk you through pricing strategy, staging tips, and my proven marketing plan.
+Thanks for reaching out! Selling your home is one of the biggest financial decisions you’ll make—and the right strategy makes all the difference.
+
+My approach is built on three things:
+
+1. Strategic Pricing - Getting you top dollar without scaring buyers.  
+2. Powerful Marketing - Professional photos, video, social ads, and a massive buyer network.  
+3. Strong Negotiation - Protecting your equity every step of the way.
+
+The first step is easy: let’s schedule a Seller Strategy Call to talk about your goals and create a plan.
+
+📅 [Book Your Strategy Call]
 
 Talk soon,  
-Michael K`,
+Michael`,
       email,
       "Stage 2"
     );
@@ -71,18 +77,23 @@ Michael K`,
   cron.schedule(cron12Days, () => {
     sendSellerMail(
       name,
-      "What’s Your Home Really Worth?",
-      `Hi ${name},  
+      "How to Sell Your Home for More Money", // Subject
+      `Hi ${name},
 
-Pricing your home correctly is the #1 factor in getting it sold quickly.  
-I offer a **free comparative market analysis (CMA)** that shows what buyers are 
-willing to pay in ${city} today.  
+Over the years, I’ve learned that selling successfully comes down to 3 keys:
 
-Would you like me to put one together for you?  
+1. Pricing it Right – Too high and you sit. Too low and you leave money on the table.
+2. Presenting it Well – Staging, photos, and small tweaks that add big value.
+3. Marketing to the Right Buyers – It’s about exposure to the people most likely to pay top dollar.
 
-Best,  
-Michael K`,
+This is exactly what I do for my clients.
+
+📅 [Schedule Your Seller Strategy Call] and let’s create your personalized plan.
+
+Talk soon,
+Michael`,
       email,
+
       "Stage 3"
     );
   });
@@ -96,24 +107,22 @@ Michael K`,
   cron.schedule(cron20Days, () => {
     sendSellerMail(
       name,
-      "The #1 Step Most Sellers Skip (Don’t!)",
-      `One of the biggest mistakes sellers make is waiting too long to prepare their home for the market. Without planning ahead, you could:
+      "How We Put Your Home in Front of the Right Buyers", // Subject
+      `Hi ${name},
 
-Lose qualified buyers who move on to better-presented homes.
 
-Overestimate what buyers will pay without improvements.
+Did you know most buyers find their home online first? That’s why marketing matters.
 
-Be taken less seriously by serious buyers.
+Here’s what I do to make your home stand out:
+- Professional photography & video tours.
+- Targeted social media and digital ads.
+- Direct outreach to my database of ready buyers.
 
-The good news? Preparing your home for sale doesn’t have to be stressful. I work with trusted professionals who can help you highlight your property’s best features.
+The goal? Maximum exposure to the buyers most likely to pay top dollar.
 
-If you’d like, I can share exactly what buyers are looking for right now.
+📅 [Let’s Discuss How I’d Market Your Home]
 
-💡 Let’s Chat About Preparing Your Home for Sale!
-
-Getting ready now means you’ll attract stronger offers when the right buyer comes along.
-
-Talk soon,  
+Best,
 Michael`,
       email,
       "Stage 4"
@@ -129,22 +138,22 @@ Michael`,
   cron.schedule(cron28Days, () => {
     sendSellerMail(
       name,
-      "How to Attract Buyers BEFORE You List on Zillow",
-      `Here’s something most sellers don’t realize: many of the best offers come *before* a home ever goes public online.
+      "Is Now the Best Time to Sell?",
+      `Hi ${name},
 
-Because of my network and active buyers list, I can often connect sellers with qualified buyers who are ready to act quickly.
+One of the most common questions I get is: “When is the best time to sell?”
 
-This can mean:
+The truth is, timing depends on two things:
+- Market Conditions – Buyer demand, inventory, and rates.
+- Your Goals – Whether you want speed, top dollar, or flexibility.
 
-✅ Selling faster, sometimes before showings even start.  
-✅ Avoiding the stress of endless open houses.  
-✅ Attracting serious buyers who are motivated.  
+I’d be happy to review the numbers for your neighborhood so you can decide if now is the right moment.
 
-[Schedule a Quick Call to Discuss Pre-Market Opportunities]
+📅 [Schedule a Quick Call to Review Timing]
 
-Let’s talk about how I can help you position your property for strong interest—even before it’s listed.
+Let’s make sure you sell when it benefits you most.
 
-Best,  
+Best,
 Michael`,
       email,
       "Stage 5"
@@ -160,22 +169,23 @@ Michael`,
   cron.schedule(cron36Days, () => {
     sendSellerMail(
       name,
-      "Don’t Let These Mistakes Cost You Thousands",
-      `When selling a home, small mistakes can cost you big.
+      "Don’t Make These Mistakes When Selling",
+      `Hi ${name},
 
-Here are the 3 most common I see:
+I see it all the time—sellers making costly mistakes.
+The most common are:
 
-❌ Pricing the property too high (causing it to sit on the market).  
-❌ Skipping essential repairs or staging.  
-❌ Accepting the first offer without proper negotiation.  
+1. Overpricing their home.
+2. Skipping preparation (staging, repairs).
+3. Choosing weak marketing.
 
-My job is to help you avoid these mistakes and protect your equity every step of the way.
+These mistakes can cost thousands of dollars or lead to sitting on the market.
 
-The best way to do that is by creating a smart selling strategy before you list your home.
+My role is to help you avoid them and get the strongest possible result.
 
-[Book Your Seller Strategy Call Today]
+📅 [Book a Strategy Session Today]
 
-Talk soon,  
+Talk soon,
 Michael`,
       email,
       "Stage 6"
@@ -191,17 +201,19 @@ Michael`,
   cron.schedule(cron44Days, () => {
     sendSellerMail(
       name,
-      "I’ll Help You Find the Perfect Buyer",
-      `Every seller has a unique goal. Maybe for you it’s selling quickly, maximizing profit, or finding a buyer who truly values your home.
+      `Hi ${name},
 
-I’d love to create a customized selling strategy for you. Unlike generic online listings, this will highlight your property’s strengths and attract the right buyers—sometimes even before it goes public.
+Here’s a quick story: Jenny wanted to sell their home in Scottsdale.
 
-Tell me your top priorities, or better yet:  
-[Schedule a Quick Call] and we’ll build your selling plan together.
+With the right pricing, staging, and marketing, we generated multiple offers and sold for over asking price in just 20 days.
 
-Let’s find the perfect buyer who checks every box.
+That’s the power of the right strategy and the right marketing.
 
-Best,  
+I’d love to help you achieve the same success.
+
+📅 [Schedule Your Seller Strategy Call Today]
+
+Best,
 Michael`,
       email,
       "Stage 7"
@@ -217,58 +229,35 @@ Michael`,
   cron.schedule(cron52Days, () => {
     sendSellerMail(
       name,
-      "How We Helped Sarah and Mark Sell Their Home Quickly (and for Top Dollar)",
-      `I want to share a quick story about Sarah and Mark. They were ready to sell their home in Downtown Gilbert but felt overwhelmed and unsure how to get the best price.
+      "Ready to Cash Out on Your Equity?",
+      `Hi ${name},
 
-Together, we created a clear selling strategy, prepared the home to shine, and attracted multiple strong offers. In the end, they sold quickly—at a price that exceeded their expectations.
+You’ve built up equity in your home—don’t let the opportunity slip by.
 
-I’d love to help you have the same success.
+Buyer demand is strong, and homes like yours are still moving quickly.
 
-[Book Your Seller Strategy Call Here]
+If you’re even thinking about selling, now is the time to get clarity.
 
-Let’s make your story the next success.
+The best next step?
+👉 [Book Your Seller Strategy Session Here]
 
-Talk soon,  
+Let’s put a plan together and set you up for success.
+
+Talk soon,
 Michael`,
       email,
       "Stage 8"
     );
   });
+ }
 
-  const sixtyoLater = new Date();
-  sixtyoLater.setDate(sixtyoLater.getDate() + 60);
-  const cron60Days = `${sixtyoLater.getMinutes()} ${sixtyoLater.getHours()} ${sixtyoLater.getDate()} ${
-    sixtyoLater.getMonth() + 1
-  } *`;
+module.exports = { sendSellerMail, scheduleSellerLeadEmails };
 
-  cron.schedule(cron60Days, () => {
-    sendSellerMail(
-      name,
-      "Ready to Sell Your Home? Let’s Get Started",
-      `Over the past few weeks, I’ve shared insights to help you succeed, but the truth is, the real results happen once we build a clear, personalized selling plan.
 
-The market moves quickly—waiting could mean missing serious buyers who are ready right now.
-
-The best next step?  
-[Book Your Seller Strategy Session Now]
-
-Let’s put your plan in place and get you on the path to a successful sale.
-
-Best,  
-Michael`,
-      email,
-      "Stage 9"
-    );
-  });
-}
-
- module.exports = { sendSellerMail, scheduleSellerLeadEmails };
-
- 
 // require("dotenv").config();
 // const nodemailer = require("nodemailer");
 // const cron = require("node-cron");
-// const supabase = require('./db/supabaseClient');
+// const supabase = require("./db/supabaseClient");
 
 // const transporter = nodemailer.createTransport({
 //   service: "gmail",
@@ -277,17 +266,18 @@ Michael`,
 //     pass: process.env.EMAIL_PASS,
 //   },
 // });
+// // Stage 1 - send immediately
 
-// async function sendMail(name, subject, text, toEmail, stage) {
+// async function sendSellerMail(name, subject, text, toEmail, stage) {
 //   try {
 //     let info = await transporter.sendMail({
 //       from: `<${process.env.EMAIL_USER}>`,
 //       to: toEmail,
 //       subject,
-//       text: `Hey ${name},\n\n${text}`,
+//       text: ` Hey ${name},\n\n${text}`,
 //     });
 
-//     console.log("✅ Email sent:", info.messageId);
+//     console.log("✅ seller Email sent:", info.messageId);
 
 //     if (toEmail && stage) {
 //       const { error } = await supabase
@@ -303,83 +293,92 @@ Michael`,
 //   }
 // }
 
-// function scheduleLeadEmails(name, email, city) {
+// function scheduleSellerLeadEmails(name, email, city) {
 //   const fourDaysLater = new Date();
-//   fourDaysLater.setMinutes(fourDaysLater.getMinutes() + 1);
-//   const cron4Days = `${fourDaysLater.getMinutes()} ${fourDaysLater.getHours()} ${fourDaysLater.getDate()} ${fourDaysLater.getMonth() + 1} *`;
+//   fourDaysLater.setDate(fourDaysLater.getDate() + 4);
+//   const cron4Days = `${fourDaysLater.getMinutes()} ${fourDaysLater.getHours()} ${fourDaysLater.getDate()} ${
+//     fourDaysLater.getMonth() + 1
+//   } *`;
 
 //   cron.schedule(cron4Days, () => {
-//     sendMail(
-//       name,
-//       "Your Home Search Simplified",
-//       `Thanks again for reaching out! Buying a home can be an overwhelming journey,
-// but with the right plan it becomes simple and exciting.
+//     sendSellerMail(
+//       "The Secret to Selling Your Home for Top Dollar",
+//       `Hi ${name},
 
-// We’ll help you find the perfect home in ${city}.
+// Thanks for reaching out! Selling your home is one of the biggest financial decisions you’ll make—and the right strategy makes all the difference.
 
-// Talk soon,
-// Michael K`,
+// My approach is built on three things:
+
+// 1. Strategic Pricing - Getting you top dollar without scaring buyers.  
+// 2. Powerful Marketing - Professional photos, video, social ads, and a massive buyer network.  
+// 3. Strong Negotiation - Protecting your equity every step of the way.
+
+// The first step is easy: let’s schedule a Seller Strategy Call to talk about your goals and create a plan.
+
+// 📅 [Book Your Strategy Call]
+
+// Talk soon,  
+// Michael`,
 //       email,
 //       "Stage 2"
 //     );
 //   });
 
 //   const twelveDaysLater = new Date();
-//   twelveDaysLater.setMinutes(twelveDaysLater.getMinutes() + 2);
-//   const cron12Days = `${twelveDaysLater.getMinutes()} ${twelveDaysLater.getHours()} ${twelveDaysLater.getDate()} ${twelveDaysLater.getMonth() + 1} *`;
+//   twelveDaysLater.setDate(twelveDaysLater.getDate() + 12);
+//   const cron12Days = `${twelveDaysLater.getMinutes()} ${twelveDaysLater.getHours()} ${twelveDaysLater.getDate()} ${
+//     twelveDaysLater.getMonth() + 1
+//   } *`;
 
 //   cron.schedule(cron12Days, () => {
-//     sendMail(
+//     sendSellerMail(
 //       name,
-//       "What's Really Happening in Real Estate",
-//       `This week, the market in ${city} is changing in important ways:
+//       "How to Sell Your Home for More Money", // Subject
+//       `Hi ${name},
 
-// Inventory is [low/high], meaning competition is [strong/weak].
+// Over the years, I’ve learned that selling successfully comes down to 3 keys:
 
-// Average home prices are [trending up/down].
+// 1. Pricing it Right – Too high and you sit. Too low and you leave money on the table.
+// 2. Presenting it Well – Staging, photos, and small tweaks that add big value.
+// 3. Marketing to the Right Buyers – It’s about exposure to the people most likely to pay top dollar.
 
-// The best homes are selling in [X] days.
+// This is exactly what I do for my clients.
 
-// When you’re buying, the difference between success and frustration often comes down to timing and preparation.
+// 📅 [Schedule Your Seller Strategy Call] and let’s create your personalized plan.
 
-// That’s why I offer my clients a personalized strategy session—you know exactly how to win in today’s market.
-
-//  [Book Your Strategy Call]
-
-// Let’s put a plan together before your dream home hits the market.
-
-// Best,
+// Talk soon,
 // Michael`,
 //       email,
+
 //       "Stage 3"
 //     );
 //   });
 
 //   const twentyDaysLater = new Date();
-//   twentyDaysLater.setMinutes(twentyDaysLater.getMinutes() + 4);
-//   const cron20Days = `${twentyDaysLater.getMinutes()} ${twentyDaysLater.getHours()} ${twentyDaysLater.getDate()} ${twentyDaysLater.getMonth() + 1} *`;
+//   twentyDaysLater.setDate(twentyDaysLater.getDate() + 20);
+//   const cron20Days = `${twentyDaysLater.getMinutes()} ${twentyDaysLater.getHours()} ${twentyDaysLater.getDate()} ${
+//     twentyDaysLater.getMonth() + 1
+//   } *`;
 
 //   cron.schedule(cron20Days, () => {
-//     sendMail(
+//     sendSellerMail(
 //       name,
-//       "The #1 Step Most Buyers Skip (Don’t!)",
-//       `One of the biggest mistakes buyers make is waiting to get pre-approved. Without it, you could:
+//       "How We Put Your Home in Front of the Right Buyers", // Subject
+//       `Hi ${name},
 
-// Miss out on the home you love.
 
-// Overestimate what you can afford.
+// Did you know most buyers find their home online first? That’s why marketing matters.
 
-// Be taken less seriously by sellers.
+// Here’s what I do to make your home stand out:
+// - Professional photography & video tours.
+// - Targeted social media and digital ads.
+// - Direct outreach to my database of ready buyers.
 
-// The good news? Pre-approval is simple. I work with trusted lenders who make the process smooth and stress-free.
+// The goal? Maximum exposure to the buyers most likely to pay top dollar.
 
-// If you don’t already have someone, I’d be happy to connect you with the best.
+// 📅 [Let’s Discuss How I’d Market Your Home]
 
-// 💡 Let’s Chat About Financing Options!
-
-// Being prepared now means you’ll be ready when the right home comes along.
-
-// Talk soon,
+// Best,
 // Michael`,
 //       email,
 //       "Stage 4"
@@ -387,28 +386,28 @@ Michael`,
 //   });
 
 //   const twentyeightLater = new Date();
-//   twentyeightLater.setMinutes(twentyeightLater.getMinutes() + 5);
-//   const cron28Days = `${twentyeightLater.getMinutes()} ${twentyeightLater.getHours()} ${twentyeightLater.getDate()} ${twentyeightLater.getMonth() + 1} *`;
+//   twentyeightLater.setDate(twentyeightLater.getDate() + 28);
+//   const cron28Days = `${twentyeightLater.getMinutes()} ${twentyeightLater.getHours()} ${twentyeightLater.getDate()} ${
+//     twentyeightLater.getMonth() + 1
+//   } *`;
 
 //   cron.schedule(cron28Days, () => {
-//     sendMail(
+//     sendSellerMail(
 //       name,
-//       "How to Find Homes BEFORE They Hit Zillow",
-//       `Here’s something most buyers don’t know: not all homes are online.
+//       "Is Now the Best Time to Sell?",
+//       `Hi ${name},
 
-// Some are sold before they ever get listed on Zillow, Redfin, or Realtor.com.
+// One of the most common questions I get is: “When is the best time to sell?”
 
-// Because of my network and MLS access, I can connect my clients with homes that are coming soon but not yet public.
+// The truth is, timing depends on two things:
+// - Market Conditions – Buyer demand, inventory, and rates.
+// - Your Goals – Whether you want speed, top dollar, or flexibility.
 
-// A few off-market opportunities.
+// I’d be happy to review the numbers for your neighborhood so you can decide if now is the right moment.
 
-// Fit their unique needs perfectly.
+// 📅 [Schedule a Quick Call to Review Timing]
 
-// This can be the difference between winning your dream home or missing it.
-
-//  [Schedule a Quick Call to Get Access]
-
-// Let’s talk about how I can give you the edge in today’s market.
+// Let’s make sure you sell when it benefits you most.
 
 // Best,
 // Michael`,
@@ -418,28 +417,29 @@ Michael`,
 //   });
 
 //   const thirtysixLater = new Date();
-//   thirtysixLater.setMinutes(thirtysixLater.getMinutes() + 6);
-//   const cron36Days = `${thirtysixLater.getMinutes()} ${thirtysixLater.getHours()} ${thirtysixLater.getDate()} ${thirtysixLater.getMonth() + 1} *`;
+//   thirtysixLater.setDate(thirtysixLater.getDate() + 36);
+//   const cron36Days = `${thirtysixLater.getMinutes()} ${thirtysixLater.getHours()} ${thirtysixLater.getDate()} ${
+//     thirtysixLater.getMonth() + 1
+//   } *`;
 
 //   cron.schedule(cron36Days, () => {
-//     sendMail(
+//     sendSellerMail(
 //       name,
-//       "Don’t Let These Mistakes Cost You Thousands",
-//       `When buying a home, small mistakes can cost you big.
+//       "Don’t Make These Mistakes When Selling",
+//       `Hi ${name},
 
-// Here are the 3 most common I see:
+// I see it all the time—sellers making costly mistakes.
+// The most common are:
 
-// Waiting too long to make an offer.
+// 1. Overpricing their home.
+// 2. Skipping preparation (staging, repairs).
+// 3. Choosing weak marketing.
 
-// Skipping pre-approval before house hunting.
+// These mistakes can cost thousands of dollars or lead to sitting on the market.
 
-// Waiving important inspections without guidance.
+// My role is to help you avoid them and get the strongest possible result.
 
-// My job is to help you avoid these mistakes and protect your money every step of the way.
-
-// The best way to do that is by creating a plan before you fall in love with a home.
-
-//  [Book Your Buyer Strategy Call Today]
+// 📅 [Book a Strategy Session Today]
 
 // Talk soon,
 // Michael`,
@@ -449,21 +449,25 @@ Michael`,
 //   });
 
 //   const fourtyfourLater = new Date();
-//   fourtyfourLater.setMinutes(fourtyfourLater.getMinutes() + 7);
-//   const cron44Days = `${fourtyfourLater.getMinutes()} ${fourtyfourLater.getHours()} ${fourtyfourLater.getDate()} ${fourtyfourLater.getMonth() + 1} *`;
+//   fourtyfourLater.setDate(fourtyfourLater.getDate() + 44);
+//   const cron44Days = `${fourtyfourLater.getMinutes()} ${fourtyfourLater.getHours()} ${fourtyfourLater.getDate()} ${
+//     fourtyfourLater.getMonth() + 1
+//   } *`;
 
 //   cron.schedule(cron44Days, () => {
-//     sendMail(
+//     sendSellerMail(
 //       name,
-//       "I’ll Help You Find the Perfect Fit",
-//       `Every buyer has a unique list of must-haves. Maybe for you it’s a community pool, extra office space, or a quick commute.
+//       `Hi ${name},
 
-// I’d love to set up a customized MLS search for you. Unlike Zillow or Redfin, this will send you listings that actually match your criteria—often before they’re public.
+// Here’s a quick story: Jenny wanted to sell their home in Scottsdale.
 
-// Send me your must-haves, or better yet:
-//  [Schedule a Quick Call] and we’ll build your perfect search together.
+// With the right pricing, staging, and marketing, we generated multiple offers and sold for over asking price in just 20 days.
 
-// Let’s find the home that checks every box.
+// That’s the power of the right strategy and the right marketing.
+
+// I’d love to help you achieve the same success.
+
+// 📅 [Schedule Your Seller Strategy Call Today]
 
 // Best,
 // Michael`,
@@ -473,22 +477,27 @@ Michael`,
 //   });
 
 //   const fiftytwoLater = new Date();
-//   fiftytwoLater.setMinutes(fiftytwoLater.getMinutes() + 8);
-//   const cron52Days = `${fiftytwoLater.getMinutes()} ${fiftytwoLater.getHours()} ${fiftytwoLater.getDate()} ${fiftytwoLater.getMonth() + 1} *`;
+//   fiftytwoLater.setDate(fiftytwoLater.getDate() + 52);
+//   const cron52Days = `${fiftytwoLater.getMinutes()} ${fiftytwoLater.getHours()} ${fiftytwoLater.getDate()} ${
+//     fiftytwoLater.getMonth() + 1
+//   } *`;
 
 //   cron.schedule(cron52Days, () => {
-//     sendMail(
+//     sendSellerMail(
 //       name,
-//       "How We Helped Jamie and Randall Buy Their Dream Home",
-//       `I want to share a quick story about Jamie and Randall. They were looking for a single-family home in Downtown Gilbert. Like many buyers, they were feeling overwhelmed and unsure how to compete.
+//       "Ready to Cash Out on Your Equity?",
+//       `Hi ${name},
 
-// Together, we created a clear strategy, found the perfect home, and negotiated an amazing deal. Today, they’re happily settled in a place they love.
+// You’ve built up equity in your home—don’t let the opportunity slip by.
 
-// I’d love to help you have the same success.
+// Buyer demand is strong, and homes like yours are still moving quickly.
 
-//  [Book Your Buyer Strategy Call Here]
+// If you’re even thinking about selling, now is the time to get clarity.
 
-// Let’s make your story the next success.
+// The best next step?
+// 👉 [Book Your Seller Strategy Session Here]
+
+// Let’s put a plan together and set you up for success.
 
 // Talk soon,
 // Michael`,
@@ -496,30 +505,6 @@ Michael`,
 //       "Stage 8"
 //     );
 //   });
+//  }
 
-//   const sixtyoLater = new Date();
-//   sixtyoLater.setMinutes(sixtyoLater.getMinutes() + 9);
-//   const cron60Days = `${sixtyoLater.getMinutes()} ${sixtyoLater.getHours()} ${sixtyoLater.getDate()} ${sixtyoLater.getMonth() + 1} *`;
-
-//   cron.schedule(cron60Days, () => {
-//     sendMail(
-//       name,
-//       "Ready to Find Your Home? Let’s Get Started",
-//       `Over the past few weeks, I’ve shared insights to help you succeed, but the truth is, the magic happens once we build a clear, personalized plan.
-
-// The market moves quickly—waiting could mean missing the perfect home.
-
-// The best next step?
-//  [Book Your Buyer Strategy Session Now]
-
-// Let’s put your plan in place and get you on the path to your dream home.
-
-// Best,
-// Michael`,
-//       email,
-//       "Stage 9"
-//     );
-//   });
-// }
-
-// module.exports = { sendMail, scheduleLeadEmails };
+// module.exports = { sendSellerMail, scheduleSellerLeadEmails };
