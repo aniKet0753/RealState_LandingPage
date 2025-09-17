@@ -194,7 +194,7 @@ exports.addLead = async (req, res) => {
       throw error;
     }
 
-    const newLead = data[0]; // ✅ the actual inserted lead
+    const newLead = data[0]; 
     const fullName = `${first_name} ${last_name}`;
     const city = preferred_location || "your city";
 
@@ -202,26 +202,23 @@ exports.addLead = async (req, res) => {
       if (newLead.type?.toLowerCase() === "seller") {
         await sendSellerMail(
           fullName,
-          "welcome to our seller programe",
-          `Hi ${fullName},
-          Thank you for submitting your property information!  
-          We’ll guide you to get the best offers and make the selling process smooth.  
-
-        Talk soon,
-        Michael`,
+          "Welcome to Our Seller Program",
+          `It was great connecting with you, ${fullName}. 
+          We’ll guide you through the process of selling your property in ${city} and make sure you get the best possible outcome. 
+          Talk soon!`,
           email,
           "stage 1"
         );
+        //first email for buyer
         scheduleSellerLeadEmails(newLead);
       } else {
         await sendMail(
           fullName,
           "Welcome To Real Estate",
           `It was great to meet you, ${fullName}.  
-        We’ll help you find the best property in ${city}.  
-        Please save my contact info so we can stay in touch.  
-        Talk soon!  
-        Michael K`,
+           We’ll help you find the best property in ${city}.   
+          Talk soon!  
+          Michael K`,
           email,
           "Stage 1"
         );
