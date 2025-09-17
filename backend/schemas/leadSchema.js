@@ -30,6 +30,7 @@ const addLeadSchema = Joi.object({
   renovations: Joi.string().trim().allow('').optional(),
   current_owe: Joi.string().trim().allow('').optional(),
   other_debts: Joi.string().trim().allow('').optional(),
+   property_value: Joi.string().trim().allow('').optional(),
   estimated_value: Joi.string().trim().allow('').optional(),
   best_visit_time: Joi.string().trim().allow('').optional(),
   referral_source: Joi.string().trim().allow('').optional(),
