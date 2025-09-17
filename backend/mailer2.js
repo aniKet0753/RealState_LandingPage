@@ -1,7 +1,7 @@
 require("dotenv").config();
 const nodemailer = require("nodemailer");
 const cron = require("node-cron");
-const supabase = require('./db/supabaseClient')
+const supabase = require("./db/supabaseClient");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -10,25 +10,25 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS,
   },
 });
-  // Stage 1 - send immediately
+// Stage 1 - send immediately
 
 
 async function sendSellerMail(name, subject, text, toEmail, stage) {
+
   try {
 
-  
     let info = await transporter.sendMail({
       from: `<${process.env.EMAIL_USER}>`,
       to: toEmail,
       subject,
-      text: `Hey ${name},\n\n${text}`,
+      text: ` Hey ${name},\n\n${text}`,
     });
 
-    console.log("✅ Email sent:", info.messageId);
+    console.log("✅ seller Email sent:", info.messageId);
 
     if (toEmail && stage) {
       const { error } = await supabase
-        .from("seller")
+        .from("leads")
         .update({ email_stage: stage, updated_at: new Date() })
         .eq("email", toEmail);
 
@@ -43,12 +43,14 @@ async function sendSellerMail(name, subject, text, toEmail, stage) {
 function scheduleSellerLeadEmails(name, email, city) {
   const fourDaysLater = new Date();
   fourDaysLater.setDate(fourDaysLater.getDate() + 4);
-  const cron4Days = `${fourDaysLater.getMinutes()} ${fourDaysLater.getHours()} ${fourDaysLater.getDate()} ${fourDaysLater.getMonth() + 1} *`;
+  const cron4Days = `${fourDaysLater.getMinutes()} ${fourDaysLater.getHours()} ${fourDaysLater.getDate()} ${
+    fourDaysLater.getMonth() + 1
+  } *`;
 
   cron.schedule(cron4Days, () => {
     sendSellerMail(
       name,
-`Thanks for reaching out! Selling a home in ${city} can feel overwhelming, 
+      `Thanks for reaching out! Selling a home in ${city} can feel overwhelming, 
 but with the right plan, you’ll get the best price in the shortest time.
 
 I’ll walk you through pricing strategy, staging tips, and my proven marketing plan.
@@ -62,12 +64,14 @@ Michael K`,
 
   const twelveDaysLater = new Date();
   twelveDaysLater.setDate(twelveDaysLater.getDate() + 12);
-  const cron12Days = `${twelveDaysLater.getMinutes()} ${twelveDaysLater.getHours()} ${twelveDaysLater.getDate()} ${twelveDaysLater.getMonth() + 1} *`;
+  const cron12Days = `${twelveDaysLater.getMinutes()} ${twelveDaysLater.getHours()} ${twelveDaysLater.getDate()} ${
+    twelveDaysLater.getMonth() + 1
+  } *`;
 
   cron.schedule(cron12Days, () => {
     sendSellerMail(
       name,
-       "What’s Your Home Really Worth?",
+      "What’s Your Home Really Worth?",
       `Hi ${name},  
 
 Pricing your home correctly is the #1 factor in getting it sold quickly.  
@@ -85,29 +89,31 @@ Michael K`,
 
   const twentyDaysLater = new Date();
   twentyDaysLater.setDate(twentyDaysLater.getDate() + 20);
-  const cron20Days = `${twentyDaysLater.getMinutes()} ${twentyDaysLater.getHours()} ${twentyDaysLater.getDate()} ${twentyDaysLater.getMonth() + 1} *`;
+  const cron20Days = `${twentyDaysLater.getMinutes()} ${twentyDaysLater.getHours()} ${twentyDaysLater.getDate()} ${
+    twentyDaysLater.getMonth() + 1
+  } *`;
 
   cron.schedule(cron20Days, () => {
     sendSellerMail(
       name,
-      "The #1 Step Most Buyers Skip (Don’t!)",
-      `One of the biggest mistakes buyers make is waiting to get pre-approved. Without it, you could:
+      "The #1 Step Most Sellers Skip (Don’t!)",
+      `One of the biggest mistakes sellers make is waiting too long to prepare their home for the market. Without planning ahead, you could:
 
-Miss out on the home you love.
+Lose qualified buyers who move on to better-presented homes.
 
-Overestimate what you can afford.
+Overestimate what buyers will pay without improvements.
 
-Be taken less seriously by sellers.
+Be taken less seriously by serious buyers.
 
-The good news? Pre-approval is simple. I work with trusted lenders who make the process smooth and stress-free.
+The good news? Preparing your home for sale doesn’t have to be stressful. I work with trusted professionals who can help you highlight your property’s best features.
 
-If you don’t already have someone, I’d be happy to connect you with the best.
+If you’d like, I can share exactly what buyers are looking for right now.
 
-💡 Let’s Chat About Financing Options!
+💡 Let’s Chat About Preparing Your Home for Sale!
 
-Being prepared now means you’ll be ready when the right home comes along.
+Getting ready now means you’ll attract stronger offers when the right buyer comes along.
 
-Talk soon,
+Talk soon,  
 Michael`,
       email,
       "Stage 4"
@@ -116,29 +122,29 @@ Michael`,
 
   const twentyeightLater = new Date();
   twentyeightLater.setDate(twentyeightLater.getDate() + 28);
-  const cron28Days = `${twentyeightLater.getMinutes()} ${twentyeightLater.getHours()} ${twentyeightLater.getDate()} ${twentyeightLater.getMonth() + 1} *`;
+  const cron28Days = `${twentyeightLater.getMinutes()} ${twentyeightLater.getHours()} ${twentyeightLater.getDate()} ${
+    twentyeightLater.getMonth() + 1
+  } *`;
 
   cron.schedule(cron28Days, () => {
     sendSellerMail(
       name,
-      "How to Find Homes BEFORE They Hit Zillow",
-      `Here’s something most buyers don’t know: not all homes are online.
+      "How to Attract Buyers BEFORE You List on Zillow",
+      `Here’s something most sellers don’t realize: many of the best offers come *before* a home ever goes public online.
 
-Some are sold before they ever get listed on Zillow, Redfin, or Realtor.com.
+Because of my network and active buyers list, I can often connect sellers with qualified buyers who are ready to act quickly.
 
-Because of my network and MLS access, I can connect my clients with homes that are coming soon but not yet public.
+This can mean:
 
-A few off-market opportunities.
+✅ Selling faster, sometimes before showings even start.  
+✅ Avoiding the stress of endless open houses.  
+✅ Attracting serious buyers who are motivated.  
 
-Fit their unique needs perfectly.
+[Schedule a Quick Call to Discuss Pre-Market Opportunities]
 
-This can be the difference between winning your dream home or missing it.
+Let’s talk about how I can help you position your property for strong interest—even before it’s listed.
 
- [Schedule a Quick Call to Get Access]
-
-Let’s talk about how I can give you the edge in today’s market.
-
-Best,
+Best,  
 Michael`,
       email,
       "Stage 5"
@@ -147,29 +153,29 @@ Michael`,
 
   const thirtysixLater = new Date();
   thirtysixLater.setDate(thirtysixLater.getDate() + 36);
-  const cron36Days = `${thirtysixLater.getMinutes()} ${thirtysixLater.getHours()} ${thirtysixLater.getDate()} ${thirtysixLater.getMonth() + 1} *`;
+  const cron36Days = `${thirtysixLater.getMinutes()} ${thirtysixLater.getHours()} ${thirtysixLater.getDate()} ${
+    thirtysixLater.getMonth() + 1
+  } *`;
 
   cron.schedule(cron36Days, () => {
     sendSellerMail(
       name,
       "Don’t Let These Mistakes Cost You Thousands",
-      `When buying a home, small mistakes can cost you big.
+      `When selling a home, small mistakes can cost you big.
 
 Here are the 3 most common I see:
 
-Waiting too long to make an offer.
+❌ Pricing the property too high (causing it to sit on the market).  
+❌ Skipping essential repairs or staging.  
+❌ Accepting the first offer without proper negotiation.  
 
-Skipping pre-approval before house hunting.
+My job is to help you avoid these mistakes and protect your equity every step of the way.
 
-Waiving important inspections without guidance.
+The best way to do that is by creating a smart selling strategy before you list your home.
 
-My job is to help you avoid these mistakes and protect your money every step of the way.
+[Book Your Seller Strategy Call Today]
 
-The best way to do that is by creating a plan before you fall in love with a home.
-
- [Book Your Buyer Strategy Call Today]
-
-Talk soon,
+Talk soon,  
 Michael`,
       email,
       "Stage 6"
@@ -178,22 +184,24 @@ Michael`,
 
   const fourtyfourLater = new Date();
   fourtyfourLater.setDate(fourtyfourLater.getDate() + 44);
-  const cron44Days = `${fourtyfourLater.getMinutes()} ${fourtyfourLater.getHours()} ${fourtyfourLater.getDate()} ${fourtyfourLater.getMonth() + 1} *`;
+  const cron44Days = `${fourtyfourLater.getMinutes()} ${fourtyfourLater.getHours()} ${fourtyfourLater.getDate()} ${
+    fourtyfourLater.getMonth() + 1
+  } *`;
 
   cron.schedule(cron44Days, () => {
     sendSellerMail(
       name,
-      "I’ll Help You Find the Perfect Fit",
-      `Every buyer has a unique list of must-haves. Maybe for you it’s a community pool, extra office space, or a quick commute.
+      "I’ll Help You Find the Perfect Buyer",
+      `Every seller has a unique goal. Maybe for you it’s selling quickly, maximizing profit, or finding a buyer who truly values your home.
 
-I’d love to set up a customized MLS search for you. Unlike Zillow or Redfin, this will send you listings that actually match your criteria—often before they’re public.
+I’d love to create a customized selling strategy for you. Unlike generic online listings, this will highlight your property’s strengths and attract the right buyers—sometimes even before it goes public.
 
-Send me your must-haves, or better yet:
- [Schedule a Quick Call] and we’ll build your perfect search together.
+Tell me your top priorities, or better yet:  
+[Schedule a Quick Call] and we’ll build your selling plan together.
 
-Let’s find the home that checks every box.
+Let’s find the perfect buyer who checks every box.
 
-Best,
+Best,  
 Michael`,
       email,
       "Stage 7"
@@ -202,23 +210,25 @@ Michael`,
 
   const fiftytwoLater = new Date();
   fiftytwoLater.setDate(fiftytwoLater.getDate() + 52);
-  const cron52Days = `${fiftytwoLater.getMinutes()} ${fiftytwoLater.getHours()} ${fiftytwoLater.getDate()} ${fiftytwoLater.getMonth() + 1} *`;
+  const cron52Days = `${fiftytwoLater.getMinutes()} ${fiftytwoLater.getHours()} ${fiftytwoLater.getDate()} ${
+    fiftytwoLater.getMonth() + 1
+  } *`;
 
   cron.schedule(cron52Days, () => {
     sendSellerMail(
       name,
-      "How We Helped Jamie and Randall Buy Their Dream Home",
-      `I want to share a quick story about Jamie and Randall. They were looking for a single-family home in Downtown Gilbert. Like many buyers, they were feeling overwhelmed and unsure how to compete.
+      "How We Helped Sarah and Mark Sell Their Home Quickly (and for Top Dollar)",
+      `I want to share a quick story about Sarah and Mark. They were ready to sell their home in Downtown Gilbert but felt overwhelmed and unsure how to get the best price.
 
-Together, we created a clear strategy, found the perfect home, and negotiated an amazing deal. Today, they’re happily settled in a place they love.
+Together, we created a clear selling strategy, prepared the home to shine, and attracted multiple strong offers. In the end, they sold quickly—at a price that exceeded their expectations.
 
 I’d love to help you have the same success.
 
- [Book Your Buyer Strategy Call Here]
+[Book Your Seller Strategy Call Here]
 
 Let’s make your story the next success.
 
-Talk soon,
+Talk soon,  
 Michael`,
       email,
       "Stage 8"
@@ -227,22 +237,24 @@ Michael`,
 
   const sixtyoLater = new Date();
   sixtyoLater.setDate(sixtyoLater.getDate() + 60);
-  const cron60Days = `${sixtyoLater.getMinutes()} ${sixtyoLater.getHours()} ${sixtyoLater.getDate()} ${sixtyoLater.getMonth() + 1} *`;
+  const cron60Days = `${sixtyoLater.getMinutes()} ${sixtyoLater.getHours()} ${sixtyoLater.getDate()} ${
+    sixtyoLater.getMonth() + 1
+  } *`;
 
   cron.schedule(cron60Days, () => {
     sendSellerMail(
       name,
-      "Ready to Find Your Home? Let’s Get Started",
-      `Over the past few weeks, I’ve shared insights to help you succeed, but the truth is, the magic happens once we build a clear, personalized plan.
+      "Ready to Sell Your Home? Let’s Get Started",
+      `Over the past few weeks, I’ve shared insights to help you succeed, but the truth is, the real results happen once we build a clear, personalized selling plan.
 
-The market moves quickly—waiting could mean missing the perfect home.
+The market moves quickly—waiting could mean missing serious buyers who are ready right now.
 
-The best next step?
- [Book Your Buyer Strategy Session Now]
+The best next step?  
+[Book Your Seller Strategy Session Now]
 
-Let’s put your plan in place and get you on the path to your dream home.
+Let’s put your plan in place and get you on the path to a successful sale.
 
-Best,
+Best,  
 Michael`,
       email,
       "Stage 9"
@@ -250,32 +262,9 @@ Michael`,
   });
 }
 
-module.exports = { sendSellerMail, scheduleSellerLeadEmails };
+ module.exports = { sendSellerMail, scheduleSellerLeadEmails };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ 
 // require("dotenv").config();
 // const nodemailer = require("nodemailer");
 // const cron = require("node-cron");
@@ -323,12 +312,12 @@ module.exports = { sendSellerMail, scheduleSellerLeadEmails };
 //     sendMail(
 //       name,
 //       "Your Home Search Simplified",
-//       `Thanks again for reaching out! Buying a home can be an overwhelming journey, 
+//       `Thanks again for reaching out! Buying a home can be an overwhelming journey,
 // but with the right plan it becomes simple and exciting.
 
 // We’ll help you find the perfect home in ${city}.
 
-// Talk soon,  
+// Talk soon,
 // Michael K`,
 //       email,
 //       "Stage 2"

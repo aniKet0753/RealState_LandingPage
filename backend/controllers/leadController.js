@@ -3,10 +3,7 @@ const csv = require("csv-parser");
 const supabase = require("../db/supabaseClient");
 const { addLeadSchema } = require("../schemas/leadSchema");
 const { sendMail, scheduleLeadEmails } = require("../mailer");
-const {
-  sendMail: sendSellerMail,
-  scheduleSellerLeadEmails,
-} = require("../mailer2");
+const { sendSellerMail, scheduleSellerLeadEmails } = require("../mailer2");
 
 // Define required headers for the CSV file
 const REQUIRED_HEADERS = [
@@ -134,12 +131,10 @@ exports.bulkUploadLeads = async (req, res) => {
           throw error;
         }
 
-        res
-          .status(200)
-          .json({
-            message: `${leads.length} leads added successfully.`,
-            leads: data,
-          });
+        res.status(200).json({
+          message: `${leads.length} leads added successfully.`,
+          leads: data,
+        });
       } catch (dbError) {
         // This will catch unique constraint errors, etc.
         res.status(500).json({ error: dbError.message });
@@ -199,33 +194,34 @@ exports.addLead = async (req, res) => {
       throw error;
     }
 
-    if (sendEmail) {
-      const fullName = `${first_name} ${last_name}`;
-      let city = preferred_location || "your city";
+    const newLead = data[0]; // ✅ the actual inserted lead
+    const fullName = `${first_name} ${last_name}`;
+    const city = preferred_location || "your city";
 
-      if (type === "seller") {
+    if (sendEmail) {
+      if (newLead.type?.toLowerCase() === "seller") {
         await sendSellerMail(
           fullName,
           "welcome to our seller programe",
           `Hi ${fullName},
-                    Thank you for submitting your property!  
-We’ll guide you to get the best offers and make the selling process smooth.  
+          Thank you for submitting your property information!  
+          We’ll guide you to get the best offers and make the selling process smooth.  
 
-Talk soon,
-Michael`,
+        Talk soon,
+        Michael`,
           email,
           "stage 1"
         );
-        scheduleSellerLeadEmails(fullName, email, city);
+        scheduleSellerLeadEmails(newLead);
       } else {
         await sendMail(
           fullName,
           "Welcome To Real Estate",
           `It was great to meet you, ${fullName}.  
-We’ll help you find the best property in ${city}.  
-Please save my contact info so we can stay in touch.  
-Talk soon!  
-Michael K`,
+        We’ll help you find the best property in ${city}.  
+        Please save my contact info so we can stay in touch.  
+        Talk soon!  
+        Michael K`,
           email,
           "Stage 1"
         );
