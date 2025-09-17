@@ -679,7 +679,7 @@ const LeadPage = () => {
         <div className="flex flex-col md:flex-row md:justify-between md:items-center mt-4 text-sm text-slate-500 space-y-2 md:space-y-0">
           <div>
             {/* Showing {(currentPage - 1) * 10 + 1} to {Math.min(currentPage * 10, totalLeads)} of {totalLeads} results */}
-            Showing {(currentPage - 1) * pageSize + 1} to {Math.min(currentPage * pageSize, totalLeads)} of {totalLeads} results
+            Showing {(currentPage - 1) * pageSize + 1} to {Math.max(currentPage * pageSize, totalLeads)} of {totalLeads} results
           </div>
           <div className="flex items-center justify-center space-x-2">
             <button
@@ -709,6 +709,9 @@ const LeadPage = () => {
             <option value={25}>25</option>
             <option value={50}>50</option>
             <option value={100}>100</option>
+            <option value={150}>150</option>
+            <option value={184}>184</option>
+            <option value={200}>200</option>
           </select>
           <span>entries</span>
         </div>
