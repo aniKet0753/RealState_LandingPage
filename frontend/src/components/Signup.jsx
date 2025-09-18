@@ -7,7 +7,7 @@ import { FaEye, FaEyeSlash, FaShieldAlt, FaPlusCircle, FaHeadset, FaSearch, FaCh
 
 // Import dynamic selection components
 import { StateSelect, CitySelect } from 'react-country-state-city';
-import 'react-country-state-city/dist/react-country-state-city.css';
+// import 'react-country-state-city/dist/react-country-state-city.css';
 
 // Set the Country ID for the United States
 const US_COUNTRY_ID = 233;
@@ -384,8 +384,10 @@ const SignupPage = () => {
                 countryid={US_COUNTRY_ID}
                 onChange={handleStateChange}
                 placeHolder="Select State"
+                inputClassName="w-full bg-[#2c2c2c]  text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-yellow-600"
                 value={formData.stateid}
               />
+              
               {validationErrors.state && <p className="text-red-500 text-sm mt-1">{validationErrors.state}</p>}
             </div>
 
@@ -399,12 +401,16 @@ const SignupPage = () => {
                 placeHolder="Select City"
                 value={formData.cityid}
                 disabled={!formData.stateid}
+                
+                inputClassName="w-full bg-[#2c2c2c] text-white rounded-md p-3 
+                  focus:outline-none focus:ring-2 focus:ring-yellow-600"
               />
               {validationErrors.city && <p className="text-red-500 text-sm mt-1">{validationErrors.city}</p>}
             </div>
 
             {/* CSS to fix dropdown background and text color */}
             <style jsx global>{`
+            
               .stdropdown-menu {
                 position: absolute;
                 transform: translateY(4px);
@@ -437,6 +443,7 @@ const SignupPage = () => {
               .dynamic-select-wrapper .list-item:hover {
                 background-color: #3c3c3c !important;
                 color: white !important;
+                
               }
             `}</style>
             

@@ -242,7 +242,7 @@ const DashboardPage = ({ isMobile, isTablet, closePanels }) => {
           </div>
         )}
 
-        <div className="flex flex-col md:flex-row md:justify-between md:items-center mt-4 text-sm text-slate-500 space-y-2 md:space-y-0">
+        <div className="mb-3 flex flex-col md:flex-row md:justify-between md:items-center mt-4 text-sm text-slate-500 space-y-2 md:space-y-0">
           <div>Showing 1 to 4 of 247 results</div>
           <div className="flex items-center justify-center space-x-2">
             <button

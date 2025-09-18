@@ -179,14 +179,21 @@ const AddLeadPage = () => {
     } catch (err) {
   console.error("Failed to create lead:", err);
 
-  if (err.response?.status === 409) {
-
+if (err.response?.status === 409) {
+  const msg = err.response?.data?.message || "Duplicate entry found";
+  
+  if (msg.toLowerCase().includes("email")) {
     showNotification("This email already exists. Please use another one.", "error");
+  } else if (msg.toLowerCase().includes("phone")) {
+    showNotification("This phone number already exists. Please use another one.", "error");
   } else {
-    const errorMessage =
-      err.response?.data?.error || "An unknown error occurred.";
-    showNotification(`Failed to create lead: ${errorMessage}`, "error");
+    showNotification(msg, "error");
   }
+} else {
+  const errorMessage =
+    err.response?.data?.error || "An unknown error occurred.";
+  showNotification(`Failed to create lead: ${errorMessage}`, "error");
+}
 } finally {
       setIsLoading(false);
     }
