@@ -7,6 +7,7 @@ const AddLeadPage = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState({ message: "", type: "" });
+  const [errors, setErrors] = useState({});
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -57,6 +58,9 @@ const AddLeadPage = () => {
         : ""
       : value;
     setFormData((prev) => ({ ...prev, [name]: processedValue }));
+      if (name === "email" && errors.email) {
+    setErrors((prev) => ({ ...prev, email: null }));
+  }
   };
 
   const handleSocialMediaChange = (index, e) => {
@@ -173,11 +177,17 @@ const AddLeadPage = () => {
         navigate("/leads");
       }, 2000);
     } catch (err) {
-      console.error("Failed to create lead:", err);
-      const errorMessage =
-        err.response?.data?.error || "An unknown error occurred.";
-      showNotification(`Failed to create lead: ${errorMessage}`, "error");
-    } finally {
+  console.error("Failed to create lead:", err);
+
+  if (err.response?.status === 409) {
+
+    showNotification("This email already exists. Please use another one.", "error");
+  } else {
+    const errorMessage =
+      err.response?.data?.error || "An unknown error occurred.";
+    showNotification(`Failed to create lead: ${errorMessage}`, "error");
+  }
+} finally {
       setIsLoading(false);
     }
   };
@@ -323,13 +333,17 @@ const AddLeadPage = () => {
                 <input
                   type="email"
                   name="email"
-                  value={formData.email}
+                  value={formData.email || ""}
                   onChange={handleChange}
                   placeholder="Email Address *"
-                  className="bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                  style={{ backgroundColor: "#4D4D4D" }}
+                  className={`bg-slate-700 p-3 rounded-md text-white focus:outline-none focus:ring-2 
+                      ${errors.email ? "border border-red-500 focus:ring-red-500" : "focus:ring-yellow-500"}`}
                   required
                 />
+                
+{errors.email && (
+  <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+)}
                 <input
                   type="tel"
                   name="phoneNumber"

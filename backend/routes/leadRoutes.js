@@ -7,13 +7,14 @@ const authenticateToken = require('../middleware/auth');
 const validate = require('../middleware/validation');
 const { addLeadSchema } = require('../schemas/leadSchema');
 const { bulkUploadLeads, saveFilteredLeadsController } = require('../controllers/leadController');
+const checkDuplicateEmail = require('../middleware/duplicateEmail');
 
 // Configure multer for file storage
 // Using memory storage for smaller files or disk storage for larger ones
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-router.post('/', authenticateToken, validate(addLeadSchema), leadController.addLead);
+router.post('/', authenticateToken, validate(addLeadSchema),checkDuplicateEmail, leadController.addLead);
 
 router.post('/add-lead-by-ai', aiLeadController.addLeadByAI);
 

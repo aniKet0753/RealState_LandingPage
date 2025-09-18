@@ -136,9 +136,11 @@ exports.bulkUploadLeads = async (req, res) => {
           leads: data,
         });
       } catch (dbError) {
-        // This will catch unique constraint errors, etc.
-        res.status(500).json({ error: dbError.message });
-      }
+  if (dbError.code === "23505") {
+    return res.status(409).json({ message: "Email already exists" });
+  }
+  res.status(500).json({ error: dbError.message });
+}
     });
 };
 
@@ -231,8 +233,11 @@ exports.addLead = async (req, res) => {
       .status(201)
       .json({ message: "Lead added successfully.", lead: data[0] });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+  if (error.code === "23505") {
+    return res.status(409).json({ message: "Email already exists" });
   }
+  res.status(500).json({ error: error.message });
+}
 };
 
 // Get all leads
