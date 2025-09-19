@@ -2,8 +2,12 @@ const { Readable } = require("stream");
 const csv = require("csv-parser");
 const supabase = require("../db/supabaseClient");
 const { addLeadSchema } = require("../schemas/leadSchema");
-const { sendMail, scheduleLeadEmails } = require("../mailer");
-const { sendSellerMail, scheduleSellerLeadEmails } = require("../mailer2");
+const { sendMail, scheduleLeadEmails } = require("../mailers/mailer");
+const { sendSellerMail, scheduleSellerLeadEmails } = require("../mailers/mailer2");
+const { initiateBuyerWorkflow, initiateSellerWorkflow } = require("../mailers/flowdeskMailer")
+const { scheduleLeadTexts } = require("../textmailers/buyerSendText"); // adjust path
+const { scheduleSellerTexts  } = require("../textmailers/SellerSendText2")
+
 
 // Define required headers for the CSV file
 const REQUIRED_HEADERS = [
@@ -200,44 +204,52 @@ exports.addLead = async (req, res) => {
     const fullName = `${first_name} ${last_name}`;
     const city = preferred_location || "your city";
 
+if (newLead.type?.toLowerCase() === "seller") {
+  scheduleSellerTexts(fullName, phone_number, city);
+} else {
+  scheduleLeadTexts(fullName, phone_number, city);
+}
+
+
+
     if (sendEmail) {
       if (newLead.type?.toLowerCase() === "seller") {
-        await sendSellerMail(
-          fullName,
-          "Welcome to Our Seller Program",
-          `It was great connecting with you, ${fullName}. 
-          We’ll guide you through the process of selling your property in ${city} and make sure you get the best possible outcome. 
-          Talk soon!`,
-          email,
-          "stage 1"
-        );
-        //first email for buyer
-        scheduleSellerLeadEmails(newLead);
-      } else {
-        await sendMail(
-          fullName,
-          "Welcome To Real Estate",
-          `It was great to meet you, ${fullName}.  
-           We’ll help you find the best property in ${city}.   
-          Talk soon!  
-          Michael K`,
-          email,
-          "Stage 1"
-        );
-
-        scheduleLeadEmails(fullName, email, city);
+        await initiateSellerWorkflow(newLead.email, newLead.first_name, newLead.last_name);
+  } else {
+        await initiateBuyerWorkflow(newLead.email, newLead.first_name, newLead.last_name);
       }
+//       if (newLead.type?.toLowerCase() === "seller") {
+//         await sendSellerMail(
+//           fullName,
+//           "Welcome to Our Seller Program",
+//           `It was great connecting with you, ${fullName}. 
+// We’ll guide you through the process of selling your property in ${city} and make sure you get the best possible outcome. 
+// Talk soon!`,
+//           email,
+//           "stage 1"
+//         );
+//         //first email for buyer
+//         scheduleSellerLeadEmails(newLead);
+//       } else {
+//         await sendMail(
+//           fullName,
+//           "Welcome To Real Estate",
+//           `It was great to meet you, ${fullName}.  
+// We’ll help you find the best property in ${city}.   
+// Talk soon!  
+// Michael K`,
+//           email,
+//           "Stage 1"
+//         );
+//         scheduleLeadEmails(fullName, email, city);
+//       }
     }
-
-    res
+     res
       .status(201)
       .json({ message: "Lead added successfully.", lead: data[0] });
   } catch (error) {
-  if (error.code === "23505") {
-    return res.status(409).json({ message: "Email already exists" });
+    res.status(500).json({ error: error.message });
   }
-  res.status(500).json({ error: error.message });
-}
 };
 
 // Get all leads

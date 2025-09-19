@@ -22,6 +22,7 @@ const twilioClient = new twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWIL
  */
 exports.sendOTP = async (req, res) => {
     const { identifier, type } = req.body;
+    
 
     if (!identifier || !type) {
         return res.status(400).json({ error: 'Identifier and type are required.' });
@@ -89,7 +90,7 @@ exports.sendOTP = async (req, res) => {
             await twilioClient.messages.create({
                 body: `Your Agentsuit OTP is: ${newOtp}. It expires in 5 minutes.`,
                 from: process.env.TWILIO_PHONE_NUMBER,
-                to: `+1${identifier}`,
+                to: `+91${identifier}`,
             });
         }
 
