@@ -37,7 +37,7 @@ I am here to assist you with your queries, provide guidance, and support your ta
 
   try {
     const chatCompletion = await groq.chat.completions.create({
-      model: 'openai/gpt-oss-20b',
+      model: 'llama-3.1-8b-instant',
       messages: [
         {
           role: 'system',
@@ -47,10 +47,9 @@ I am here to assist you with your queries, provide guidance, and support your ta
         { role: 'user', content: userInput },
       ],
       temperature: 1,
-      max_completion_tokens: 1024,
+      max_tokens: 1024, 
       top_p: 1,
       stream: false,
-      reasoning_effort: 'medium',
       stop: null,
     });
 
@@ -59,7 +58,9 @@ I am here to assist you with your queries, provide guidance, and support your ta
     return res.json({ aiResponse, leadData: {}, awaitingConfirmation: false });
   } catch (error) {
     console.error('Groq AI API error:', error.response?.data || error.message);
-    res.status(500).json({ error: 'Failed to get response from Groq AI' });
+    res.status(500).json({ error: 'Failed to get response from Groq AI',    details: error.response ? error.response.data : error.message,
+ });
+    
   }
 });
 
