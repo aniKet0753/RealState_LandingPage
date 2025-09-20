@@ -1,24 +1,53 @@
-const twilio = require("twilio");
-const client = new twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
+// const axios = require("axios");
 
-async function triggerAIAgentCall({ phone, name }) {
-  try {
-    const call = await client.calls.create({
-      from: process.env.TWILIO_PHONE_NUMBER,
-      to: `+91${phone}`,
-      url: `${process.env.BASE_URL}/voice-response?name=${encodeURIComponent(name)}`,
-      machineDetection: "Enable"
-    });
+// /**
+//  * Trigger a Retail AI agent call to a given phone number.
+//  * @param {Object} params
+//  * @param {string} params.phone - Customer phone number (without country code)
+//  * @param {string} params.name - Customer name
+//  */
+// async function triggerRetailAIAgent({ phone, name }) {
+//   try {
+//     if (!process.env.Retail_api_Key) {
+//       throw new Error("Retail API key is not set in environment variables");
+//     }
 
-    console.log("📞 AI Call triggered:", call.sid);
-    return call.sid;
-  } catch (err) {
-    console.error("❌ Error triggering AI call:", err);
-    return null;
-  }
-}
+//     const fromNumber = process.env.RETELL_PHONE_NUMBER || "+15394495356"; // verified number
 
-module.exports = { triggerAIAgentCall };
+//     const payload = {
+//       from_number: fromNumber,
+//       to_number: `+91${phone}`,
+//       metadata: { customer_name: name },
+//       script: `Hi ${name}, it was great speaking with you! I specialize in helping homeowners like you sell quickly and for top dollar.`,
+//       voice: "standard",
+//       stage: "stage_1",
+//     };
+
+//     const response = await axios.post(
+//       "https://5baaae0584c4.ngrok-free.app/webhook",
+//       payload,
+//       {
+//         headers: {
+//           "Content-Type": "application/json",
+//           "x-api-key": process.env.Retail_api_Key, // ✅ correct header
+//         },
+//         validateStatus: () => true, // prevent axios from throwing on non-200
+//       }
+//     );
+
+//     // Log full response for debugging
+//     console.log("📄 Raw Retail AI response:", response.status, response.data);
+
+//     if (response.status !== 200 && response.status !== 201) {
+//       throw new Error(`Retail AI API returned status ${response.status}: ${JSON.stringify(response.data)}`);
+//     }
+
+//     console.log("✅ Retail AI agent call triggered successfully:", response.data);
+//     return response.data;
+//   } catch (err) {
+//     console.error("❌ Error triggering Retail AI agent call:", err.message || err);
+//     return null;
+//   }
+// }
+
+// module.exports = { triggerRetailAIAgent };

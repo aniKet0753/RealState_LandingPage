@@ -20,7 +20,7 @@ async function sendSMS(name, text, phone, stage) {
       const { error } = await supabase
         .from("leads")
         .update({ sms_stage: stage, updated_at: new Date() })
-        .eq("phone", phone);
+        .eq("phone_number", phone);
 
       if (error) console.error("❌ Error updating sms_stage:", error);
       else console.log(` Updated ${phone} → sms_stage = ${stage}`);
@@ -88,9 +88,9 @@ Did you see that in Your indox? `
   scheduleMessage(
     36,
     "Stage 6",
-    "Home Value Report"
-`Check Your email-- I sent some info about timming the market to maximize Your sale.
-Did it Come throungh?`
+    `Home Value Report:
+     Check Your email-- I sent some info about timming the market to maximize Your sale.
+     Did it Come throungh?`
   );
 
   // Stage 7 → 44 days later

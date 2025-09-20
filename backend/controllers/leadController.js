@@ -7,6 +7,8 @@ const { sendSellerMail, scheduleSellerLeadEmails } = require("../mailers/mailer2
 const { initiateBuyerWorkflow, initiateSellerWorkflow } = require("../mailers/flowdeskMailer")
 const { scheduleLeadTexts } = require("../textmailers/buyerSendText"); // adjust path
 const { scheduleSellerTexts  } = require("../textmailers/SellerSendText2")
+// const {triggerRetailAIAgent  } = require("./triggerAIAgentCall")
+// triggerRetailAIAgent({ phone: "9122503536", name: "Rahul Sharma" });
 
 
 // Define required headers for the CSV file
@@ -206,6 +208,13 @@ exports.addLead = async (req, res) => {
 
 if (newLead.type?.toLowerCase() === "seller") {
   scheduleSellerTexts(fullName, phone_number, city);
+      //   try {
+      //   await triggerRetailAIAgent({ phone: phone_number, name: fullName });
+      //   console.log(" Retail AI call triggered successfully");
+      // } catch (err) {
+      //   console.error(" Error triggering Retail AI call:", err);
+      // }
+    
 } else {
   scheduleLeadTexts(fullName, phone_number, city);
 }
@@ -244,7 +253,7 @@ if (newLead.type?.toLowerCase() === "seller") {
 //         scheduleLeadEmails(fullName, email, city);
 //       }
     }
-     res
+      res
       .status(201)
       .json({ message: "Lead added successfully.", lead: data[0] });
   } catch (error) {

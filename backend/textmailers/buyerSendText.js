@@ -3,7 +3,7 @@ const twilio = require("twilio");
 const supabase = require("../db/supabaseClient");
 const cron = require("node-cron");
 const client = new twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-const {triggerAIAgentCall} = require("../controllers/triggerAIAgentCall")
+
 
 
 async function sendSMS(name, text, phone, stage) {
@@ -11,7 +11,7 @@ async function sendSMS(name, text, phone, stage) {
      let message = await client.messages.create({
       body: `Hey ${name}, ${text}`,
       from: process.env.TWILIO_PHONE_NUMBER,
-      to: `+91${phone}`, 
+      to: `+91${phone}`, // assuming US numbers
     });
 
     console.log("✅ SMS sent:", message.sid);
@@ -20,14 +20,10 @@ async function sendSMS(name, text, phone, stage) {
       const { error } = await supabase
         .from("leads")
         .update({ sms_stage: stage, updated_at: new Date() })
-        .eq("phone", phone);
+        .eq("phone_number", phone);
 
       if (error) console.error("❌ Error updating sms_stage:", error);
       else console.log(` Updated ${phone} → sms_stage = ${stage}`);
-    }
-      if (stage === "Stage 1") {
-      console.log("📞 Triggering AI Agent Call for", phone);
-      await triggerAIAgentCall({ name, phone, stage });
     }
   } catch (error) {
     console.error("❌ Error sending SMS:", error);
@@ -48,24 +44,15 @@ function scheduleLeadTexts(name, phone, city) {
         );
 
   
-  function scheduleMessage(daysLater, stage, text,triggerCall = false) {
+  function scheduleMessage(daysLater, stage, text) {
     const targetDate = new Date();
     targetDate.setDate(targetDate.getDate() + daysLater);
     const cronExpr = `${targetDate.getMinutes()} ${targetDate.getHours()} ${targetDate.getDate()} ${
       targetDate.getMonth() + 1
     } *`;
 
-    cron.schedule(cronExpr, async () => {
-    await sendSMS(name, text, phone, stage);
-
-    if (triggerCall) {
-      console.log("📞 Scheduled AI Agent Call triggered for", phone);
-      await triggerAIAgentCall({ name, phone, stage });
-    }
-  });
+    cron.schedule(cronExpr, () => sendSMS(name, text, phone, stage));
   }
-  scheduleMessage(12, "Stage 1", `sent You an email with the latest ${city} market update...`, true);
-
 
   // Stage 2 → 4 days later
   scheduleMessage(

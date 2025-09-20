@@ -20,6 +20,9 @@ app.get('/', (req, res) => {
     res.send('AgentSuit Backend API is working!');
 });
 
+// app.use('/api/retailai', require('./routes/retailAIWebhook'));
+
+
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
