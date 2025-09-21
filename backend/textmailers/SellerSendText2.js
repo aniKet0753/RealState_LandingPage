@@ -15,7 +15,9 @@ async function sendSMS(name, text, phone, stage) {
     });
 
     console.log("✅ SMS sent:", message.sid);
-
+//adding...
+//  ALTER TABLE leads
+// ALTER COLUMN sms_stage TYPE text in supabase for getting stage of sms
     if (phone && stage) {
       const { error } = await supabase
         .from("leads")
