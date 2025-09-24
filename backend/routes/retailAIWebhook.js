@@ -1,39 +1,43 @@
-// const express = require('express');
-// const router = express.Router();
-// const supabase = require('../db/supabaseClient');
+// const axios = require("axios");
 
-// // Middleware to parse JSON body
-// router.use(express.json());
-
-// // Webhook to handle Retail AI events
-// router.post('/webhook', async (req, res) => {
+// // Trigger Retell AI call directly from backend
+// async function triggerRetailAIWebhook({ name, phone, email, city }) {
 //   try {
-//     const event = req.body;
-
-//     console.log(" Retail AI Webhook Event Received:", event);
-
-//     const { phone_number, status, agent_id, lead_id } = event;
-
-//     // Example: update lead status in Supabase
-//     if (phone_number && status) {
-//       const { data, error } = await supabase
-//         .from('leads')
-//         .update({ status: status })  // update status sent by Retail AI
-//         .eq('phone_number', phone_number);
-
-//       if (error) {
-//         console.error(' Supabase update error:', error);
-//         return res.status(500).json({ message: 'Failed to update lead status' });
-//       }
-
-//       console.log(` Lead with phone ${phone_number} updated to status "${status}"`);
+//     // Validate and format phone to E.164 (India default +91)
+//     const phoneClean = phone.replace(/\D/g, ""); // keep digits only
+//     if (!phoneClean.match(/^\d{10,15}$/)) {
+//       throw new Error("Invalid phone number. Must be 10–15 digits.");
 //     }
+//     const formattedPhone = phone.startsWith("+") ? phone : `+91${phoneClean}`;
 
-//     res.status(200).json({ message: 'Webhook received successfully' });
+//     // Payload for Retell AI call
+//     const payload = {
+//       from_number: process.env.Retail_PHONE_NUMBER, // your registered caller ID with Retell
+//       to_number: formattedPhone, 
+//       agent_id: process.env.RETAIL_AGENT_ID, 
+//       metadata: {
+//         name,
+//         email,
+//         city,
+//       },
+//     };
+//     const response = await axios.post(
+//       "https://api.retellai.com/v2/call",//not found as of now cus of domain nme
+//       payload,
+//       {
+//         headers: {
+//           Authorization: `Bearer ${process.env.Retail_api_Key}`,
+//           "Content-Type": "application/json",
+//         },
+//       }
+//     );
+
+//     console.log("Retell AI call triggered:", response.data);
+//     return response.data;
 //   } catch (err) {
-//     console.error(' Error handling webhook:', err);
-//     res.status(500).json({ message: 'Internal server error' });
+//     console.error(" Error triggering Retell AI call:", err.response?.data || err.message);
+//     throw err;
 //   }
-// });
+// }
 
-// module.exports = router;
+// module.exports = { triggerRetailAIWebhook };

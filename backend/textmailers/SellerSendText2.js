@@ -2,115 +2,152 @@ require("dotenv").config();
 const twilio = require("twilio");
 const supabase = require("../db/supabaseClient");
 const cron = require("node-cron");
-const client = new twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
+const client = new twilio(
+  process.env.TWILIO_ACCOUNT_SID,
+  process.env.TWILIO_AUTH_TOKEN
+);
 
-
-async function sendSMS(name, text, phone, stage) {
-  try {
-     let message = await client.messages.create({
-      body: `Hey ${name}, ${text}`,
-      from: process.env.TWILIO_PHONE_NUMBER,
-      to: `+91${phone}`, // assuming US numbers
-    });
-
-    console.log("✅ SMS sent:", message.sid);
-//adding...
-//  ALTER TABLE leads
-// ALTER COLUMN sms_stage TYPE text in supabase for getting stage of sms
-    if (phone && stage) {
-      const { error } = await supabase
-        .from("leads")
-        .update({ sms_stage: stage, updated_at: new Date() })
-        .eq("phone_number", phone);
-
-      if (error) console.error("❌ Error updating sms_stage:", error);
-      else console.log(` Updated ${phone} → sms_stage = ${stage}`);
-    }
-  } catch (error) {
-    console.error("❌ Error sending SMS:", error);
-  }
-}
-
-function scheduleSellerTexts(name, phone, city) {
-  // Stage 1: Immediately
-  sendSMS(
-    name,
-`Hi ${name}, it was great speaking with you! 
+const STAGES = [
+  {
+    stage: 1,
+  minutesLater: 0,
+    text: (name) => `Hi ${name}, it was great speaking with you!
 I specialize in helping homeowners like you sell quickly and for top dollar. 
-Please save my contact information and feel free to reach out anytime with questions about your home’s value, the market, or the selling process. 
-Looking forward to working together! 
+Please save my contact info. Looking forward to working together!
 – Michael`,
-    phone,
-    "Stage 1"
-  );
-
-  
-  function scheduleMessage(daysLater, stage, text) {
-    const targetDate = new Date();
-    targetDate.setDate(targetDate.getDate() + daysLater);
-    const cronExpr = `${targetDate.getMinutes()} ${targetDate.getHours()} ${targetDate.getDate()} ${
-      targetDate.getMonth() + 1
-    } *`;
-
-    cron.schedule(cronExpr, () => sendSMS(name, text, phone, stage));
-  }
-
-  // Stage 2 → 4 days later
-  scheduleMessage(
-    4,//2 for 24 hour
-    "Stage 2",
-`Hi ${name}, i just sent youy an email about the 3 keys to selling for top dollar. can you take a 
-quick look and tell me What you Think?`  );
-
-  // Stage 3 → 12 days later
-  scheduleMessage(
-    12,
-    "Stage 3",
-`Check Your Inbox--I sent you an email about finding out What Your home is Worth today.
-Did it Came through? `  );
-
-  // Stage 4 → 20 days later
-  scheduleMessage(
-    20,
-    "Stage 4",
-`Sent you an email outline the 3 keys to selling fast and for more.
-Can you Check and let me know if you saw it?`
-  );
-
-  // Stage 5 → 28 days later
-  scheduleMessage(
-    28,
-    "Stage 5",
-`Just emalied you details about how i market homes [beyound a yard sign].
-Did you see that in Your indox? `
-  );
-
-  // Stage 6 → 36 days later
-  scheduleMessage(
-    36,
-    "Stage 6",
-    `Home Value Report:
-     Check Your email-- I sent some info about timming the market to maximize Your sale.
-     Did it Come throungh?`
-  );
-
-  // Stage 7 → 44 days later
-  scheduleMessage(
-    44,
-    "Stage 7",
-`Sent you an email about the 3 biggest mistakes sellers make.
-Can You take a quick look and tell me what you think?`
-  );
-
-  // Stage 8 → 52 days later
-  scheduleMessage(
-    52,
-    "Stage 8",
-    
-`just emailed you about cashing out on your equity while demand is still strong.
-Did You see that Email Yetr?`
-  );
+  },
+  {
+    stage: 2,
+    minutesLater: 1,
+    text: (name) =>
+      `Hi ${name}, I just sent you an email about the 3 keys to selling for top dollar. Can you check and tell me what you think? . – Michael`,
+  },
+  {
+    stage: 3,
+    minutesLater: 2,
+    text: (name) =>
+      `Hi ${name}, did you get my email about finding out what your home is worth today?. – Michael`,
+  },
+  {
+    stage: 4,
+    minutesLater: 3,
+    text: (name) =>
+      `Hi ${name}, I sent you an email outlining the 3 keys to selling fast and for more. Can you confirm you saw it?. – Michael`,
+  },
+  {
+    stage: 5,
+    minutesLater: 4,
+    text: (name) =>
+      `Hi ${name}, I just emailed you details about how I market homes beyond a yard sign. Did you see it in your inbox?. – Michael`,
+  },
+  {
+    stage: 6,
+    minutesLater: 5,
+    text: (name) =>
+      `Hi ${name}, I sent you a Home Value Report about timing the market to maximize your sale. Did it come through? .– Michael`,
+  },
+  {
+    stage: 7,
+   minutesLater: 6,
+    text: (name) =>
+      `Hi ${name}, I emailed you about the 3 biggest mistakes sellers make. Can you take a look and tell me what you think. – Michael?`,
+  },
+  {
+    stage: 8,
+    minutesLater: 7,
+    text: (name) =>
+      `Hi ${name}, I just emailed you about cashing out on your equity while demand is strong. Did you see it yet?. – Michael`,
+  },
+];
+function normalizePhone(phone) {
+  if (!phone.startsWith("+91")) return `+91${phone.replace(/^0+/, "")}`;
+  return phone;
+}
+// function getNextDate(baseDate, daysLater) {
+//   const date = new Date(baseDate);
+//   date.setDate(date.getDate() + daysLater);
+//   return date; // Always store ISO string for Supabase
+// }
+//SMS Sender
+async function sendSMSViaTwilio(to, body) {
+  const message = await client.messages.create({
+    body,
+    from: process.env.TWILIO_PHONE_NUMBER,
+    to,
+  });
+  return message.sid;
 }
 
-module.exports = { sendSMS, scheduleSellerTexts };
+async function scheduleSellerTexts(lead) {
+  const normalizedPhone = normalizePhone(lead.phone_number);
+  const now = new Date();
+
+  for (const stageObj of STAGES) {
+    const sendAt = new Date(now.getTime() + stageObj.minutesLater * 60000);
+    await supabase.from("lead_sms2").insert({
+      lead_id: lead.id,
+      stage: stageObj.stage,
+      send_at: sendAt.toISOString(),
+      status: "pending",
+    });
+    console.log(`📆 Scheduled Stage ${stageObj.stage} SMS for ${normalizedPhone} at ${sendAt}`);
+  }
+}
+async function processPendingSMS() {
+  const { data: pendingSMS } = await supabase
+    .from("lead_sms2")
+    .select("*")
+    .eq("status", "pending")
+    .lte("send_at", new Date().toISOString());
+
+  if (!pendingSMS || !pendingSMS.length) return;
+await Promise.all(
+  pendingSMS.map(async (sms) => {
+    try {
+      const { data: lead } = await supabase
+        .from("leads")
+        .select("*")
+        .eq("id", sms.lead_id)
+        .single();
+
+      if (!lead || !lead.phone_number) {
+        console.error(`❌ Lead ${sms.lead_id} has no phone number. Skipping SMS.`);
+        await supabase
+          .from("lead_sms2") // or buyer_sms
+          .update({ status: "failed", updated_at: new Date().toISOString() })
+          .eq("id", sms.id);
+        return;
+      }
+
+      const normalizedPhone = normalizePhone(lead.phone_number);
+      const stageText =
+        sms.stage === 3
+          ? STAGES[sms.stage - 1].text(lead.first_name, sms.city)
+          : STAGES[sms.stage - 1].text(lead.first_name);
+
+      const sid = await sendSMSViaTwilio(
+        normalizedPhone,
+        stageText,
+        lead.id,
+        sms.stage
+      );
+
+      await supabase
+        .from("lead_sms2")
+        .update({
+          status: "sent",
+          twilio_sid: sid,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", sms.id);
+
+      console.log(`✅ SMS sent for lead ${lead.id}, stage ${sms.stage}`);
+    } catch (err) {
+   
+      console.error(`❌ Error sending SMS for lead ${sms.lead_id}, stage ${sms.stage}:`, err.message);
+    }
+  })
+);
+}
+module.exports = { scheduleSellerTexts, processPendingSMS, STAGES };

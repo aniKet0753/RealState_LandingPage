@@ -2,224 +2,167 @@ require("dotenv").config();
 const twilio = require("twilio");
 const supabase = require("../db/supabaseClient");
 const cron = require("node-cron");
-const client = new twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
+const client = new twilio(
+  process.env.TWILIO_ACCOUNT_SID,
+  process.env.TWILIO_AUTH_TOKEN
+);
 
+const STAGES = [
+  {
+    stage: 1,
+    minutesLater: 0,
+    text: (name) =>
+      `Hi ${name}, it was a pleasure meeting you! Please save my contact info.`,
+  },
+  {
+    stage: 2,
+    minutesLater: 1,
+    text: (name) =>
+      `Hi ${name}, just sent you an email with a 3-step roadmap for buying your home. Thoughts?`,
+  },
+  {
+    stage: 3,
+    minutesLater: 2,
+    text: (name, city) =>
+      `Hi ${name}, sent you the latest ${city} market update. Did you get it?`,
+  },
+  {
+    stage: 4,
+    minutesLater: 3,
+    text: (name) => `Check your inbox: financing & pre-approval info.`,
+  },
+  {
+    stage: 5,
+    minutesLater: 4,
+    text: (name) =>
+      `I emailed you insider info about accessing homes before Zillow. Did you see it?`,
+  },
+  {
+    stage: 6,
+    minutesLater: 5,
+    text: (name) =>
+      `Sent email about 3 costly mistakes buyers make. Worth a read.`,
+  },
+  {
+    stage: 7,
+    minutesLater: 6,
+    text: (name) => `Just emailed you about custom searches. Did it land?`,
+  },
+  {
+    stage: 8,
+    minutesLater: 7,
+    text: (name) =>
+      `Check your email about making your next move toward homeownership.`,
+  },
+];
 
-async function sendSMS(name, text, phone, stage) {
+function normalizePhone(phone) {
+  if (!phone.startsWith("+91")) return `+91${phone.replace(/^0+/, "")}`;
+  return phone;
+}
+
+// SMS sender
+async function sendSMSViaTwilio(to, body, leadId, stage) {
   try {
-     let message = await client.messages.create({
-      body: `Hey ${name}, ${text}`,
+    const message = await client.messages.create({
+      body,
       from: process.env.TWILIO_PHONE_NUMBER,
-      to: `+91${phone}`, // assuming US numbers
+      to,
     });
+    console.log(
+      ` Lead ${leadId}, Stage ${stage} → Twilio accepted, SID: ${message.sid}`
+    );
+    return message.sid;
+  } catch (err) {
+    console.error(
+      ` Error sending SMS for lead ${leadId}, stage ${stage}:`,
+      err.message
+    );
+    throw err;
+  }
+}
 
-    console.log("✅ SMS sent:", message.sid);
-//adding...
-//  ALTER TABLE leads
-// ALTER COLUMN sms_stage TYPE text in supabase for getting stage of sms
-    if (phone && stage) {
-      const { error } = await supabase
+// Schedule all stages for a buyer
+async function scheduleBuyerTexts(lead, city) {
+  const normalizedPhone = normalizePhone(lead.phone_number);
+  const now = new Date();
+
+  for (const stageObj of STAGES) {
+    const sendAt = new Date(now.getTime() + stageObj.minutesLater * 60000); //custmizw asu want time gap
+    await supabase.from("lead_sms2").insert({
+      lead_id: lead.id,
+      stage: stageObj.stage,
+      send_at: sendAt.toISOString(),
+      status: "pending",
+      city: city || null,
+    });
+    console.log(
+      ` Scheduled Stage ${stageObj.stage} SMS for ${normalizedPhone} at ${sendAt}`
+    );
+  }
+}
+
+// Process pending buyer SMS
+async function processPendingBuyerSMS() {
+  console.log(" Running Buyer SMS scheduler...");
+  const { data: pendingSMS } = await supabase
+    .from("lead_sms2")
+    .select("*")
+    .eq("status", "pending")
+    .lte("send_at", new Date().toISOString());
+
+  if (!pendingSMS || !pendingSMS.length) return;
+await Promise.all(
+  pendingSMS.map(async (sms) => {
+    try {
+      const { data: lead } = await supabase
         .from("leads")
-        .update({ sms_stage: stage, updated_at: new Date() })
-        .eq("phone_number", phone);
+        .select("*")
+        .eq("id", sms.lead_id)
+        .single();
 
-      if (error) console.error("❌ Error updating sms_stage:", error);
-      else console.log(` Updated ${phone} → sms_stage = ${stage}`);
+      if (!lead || !lead.phone_number) {
+        console.error(`❌ Lead ${sms.lead_id} has no phone number. Skipping SMS.`);
+        await supabase
+          .from("lead_sms2") // or buyer_sms
+          .update({ status: "failed", updated_at: new Date().toISOString() })
+          .eq("id", sms.id);
+        return;
+      }
+
+      const normalizedPhone = normalizePhone(lead.phone_number);
+      const stageText =
+        sms.stage === 3
+          ? STAGES[sms.stage - 1].text(lead.first_name, sms.city)
+          : STAGES[sms.stage - 1].text(lead.first_name);
+
+      const sid = await sendSMSViaTwilio(
+        normalizedPhone,
+        stageText,
+        lead.id,
+        sms.stage
+      );
+
+      await supabase
+        .from("lead_sms2")
+        .update({
+          status: "sent",
+          twilio_sid: sid,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", sms.id);
+
+      console.log(`✅ SMS sent for lead ${lead.id}, stage ${sms.stage}`);
+    } catch (err) {
+      console.error(`❌ Error sending SMS for lead ${sms.lead_id}, stage ${sms.stage}:`, err.message);
     }
-  } catch (error) {
-    console.error("❌ Error sending SMS:", error);
-  }
+  })
+);
 }
-
-function scheduleLeadTexts(name, phone, city) {
-  // Stage 1: Immediately
-  sendSMS(
-    name,
-     `Hi ${name}, it was a pleasure meeting you! 
-      I’m excited to help you on your journey to buying a home. 
-      Please save my contact info so you can reach me anytime with questions. 
-      Talk soon!  
-      – Michael`,
-        phone,
-        "Stage 1"
-        );
-
-  
-  function scheduleMessage(daysLater, stage, text) {
-    const targetDate = new Date();
-    targetDate.setDate(targetDate.getDate() + daysLater);
-    const cronExpr = `${targetDate.getMinutes()} ${targetDate.getHours()} ${targetDate.getDate()} ${
-      targetDate.getMonth() + 1
-    } *`;
-
-    cron.schedule(cronExpr, () => sendSMS(name, text, phone, stage));
-  }
-
-  // Stage 2 → 4 days later
-  scheduleMessage(
-    4,//2 for 24 hour
-    "Stage 2",
-       `Hi ${name}, just sent you an email with a simple 3-step roadmap for buying your home. 
-        Check it out—what do you think of step one?`  );
-
-  // Stage 3 → 12 days later
-  scheduleMessage(
-    12,
-    "Stage 3",
-       `sent You an email with the latest ${city} market update, Take a loock -it explain how buyers are 
-        winning right now, Did You get it ?`  );
-
-  // Stage 4 → 20 days later
-  scheduleMessage(
-    20,
-    "Stage 4",
-      `Check Your Indox--I sent You an Email about financing & Pre-approvial
-       [the #1 step buyers often skip] Did you get a Chance to read it yet?`
+cron.schedule("* * * * *", () => {
+  processPendingBuyerSMS().catch((err) =>
+    console.error("❌ Buyer SMS scheduler error:", err)
   );
-
-  // Stage 5 → 28 days later
-  scheduleMessage(
-    28,
-    "Stage 5",
-      `I just emailed you some insider info about how to access home BEFORE Zillow. Can you find that email? Let me know 
-       Your thougths.`
-  );
-
-  // Stage 6 → 36 days later
-  scheduleMessage(
-    36,
-    "Stage 6",
-      `Sent you email outlining 3 costly mistakes buyers make,
-       Did you see it? Worth a quick read.`
-  );
-
-  // Stage 7 → 44 days later
-  scheduleMessage(
-    44,
-    "Stage 7",
-      `just emallied you about setting up your own custome MI.5 search
-       (way better than zillow). Did that land in Your inbox ?`
-  );
-
-  // Stage 8 → 52 days later
-  scheduleMessage(
-    52,
-    "Stage 8",
-      `Check Your Email-- I sent a note about making your next move toward homeownership,
-       Did you see it?`
-  );
-}
-
-module.exports = { sendSMS, scheduleLeadTexts };
-
-
-// require("dotenv").config();
-// const twilio = require("twilio");
-// const supabase = require("../db/supabaseClient");
-// const cron = require("node-cron");
-// const client = new twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH);
-
-
-
-// async function sendSMS(name, text, phone, stage) {
-//   try {
-//      let message = await client.messages.create({
-//       body: `Hey ${name}, ${text}`,
-//       from: process.env.TWILIO_PHONE_NUMBER,
-//       to: `+91${phone}`, // assuming US numbers
-//     });
-
-//     console.log("✅ SMS sent:", message.sid);
-
-//     if (phone && stage) {
-//       const { error } = await supabase
-//         .from("leads")
-//         .update({ sms_stage: stage, updated_at: new Date() })
-//         .eq("phone", phone);
-
-//       if (error) console.error("❌ Error updating sms_stage:", error);
-//       else console.log(` Updated ${phone} → sms_stage = ${stage}`);
-//     }
-//   } catch (error) {
-//     console.error("❌ Error sending SMS:", error);
-//   }
-// }
-
-// function scheduleLeadTexts(name, phone, city) {
-//   // Stage 1: Immediately
-//   sendSMS(
-//     name,
-//     `Hey ${name}, it was great to meet you. 
-//      Here is my contact information. Please save it and do not hesitate to reach out with any questions. 
-//      Talk soon! 
-//      Michael
-//         (attach contact information)`,
-//     phone,
-//     "Stage 1"
-//   );
-
-  
-//   function scheduleMessage(daysLater, stage, text) {
-//     const targetDate = new Date();
-//     targetDate.setDate(targetDate.getDate() + daysLater);
-//     const cronExpr = `${targetDate.getMinutes()} ${targetDate.getHours()} ${targetDate.getDate()} ${
-//       targetDate.getMonth() + 1
-//     } *`;
-
-//     cron.schedule(cronExpr, () => sendSMS(name, text, phone, stage));
-//   }
-
-//   // Stage 2 → 4 days later
-//   scheduleMessage(
-//     4,//2 for 24 hour
-//     "Stage 2",
-// `Hi ${name}, just sent you an email with a simple 3-step roadmap for buying your home. 
-// Check it out—what do you think of step one?`  );
-
-//   // Stage 3 → 12 days later
-//   scheduleMessage(
-//     12,
-//     "Stage 3",
-// `sent You an email with the latest ${city} market update, Take a loock -it explain how buyers are 
-// winning right now, Did You get it ?`  );
-
-//   // Stage 4 → 20 days later
-//   scheduleMessage(
-//     20,
-//     "Stage 4",
-// `Check Your Indox--I sent You an Email about financing & Pre-approvial
-//  [the #1 step buyers often skip] Did you get a Chance to read it yet?`
-//   );
-
-//   // Stage 5 → 28 days later
-//   scheduleMessage(
-//     28,
-//     "Stage 5",
-// `I just emailed you some insider info about how to access home BEFORE Zillow. Can you find that email? Let me know 
-// Your thougths.`
-//   );
-
-//   // Stage 6 → 36 days later
-//   scheduleMessage(
-//     36,
-//     "Stage 6",
-// `Sent you email outlining 3 costly mistakes buyers make , Did you see it? Worth a quick read.`
-//   );
-
-//   // Stage 7 → 44 days later
-//   scheduleMessage(
-//     44,
-//     "Stage 7",
-// `just emallied you about setting up your own custome MI.5 search (way better than zillow). Did that land in Your inbox ?`
-//   );
-
-//   // Stage 8 → 52 days later
-//   scheduleMessage(
-//     52,
-//     "Stage 8",
-// `Check Your Email-- I sent a note about making your next move toward homeownership, Did you see it?`
-//   );
-// }
-
-// module.exports = { sendSMS, scheduleLeadTexts };
+});
+module.exports = { scheduleBuyerTexts, processPendingBuyerSMS, STAGES };

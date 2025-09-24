@@ -9,6 +9,8 @@ const { addLeadSchema } = require('../schemas/leadSchema');
 const { bulkUploadLeads, saveFilteredLeadsController } = require('../controllers/leadController');
 const checkDuplicateEmail = require('../middleware/duplicateEmail');
 const checkDuplicatePhone = require('../middleware/duplicatePhone');
+const { sendTestSMS } = require("../controllers/leadController"); // adjust path
+
 
 // Configure multer for file storage
 // Using memory storage for smaller files or disk storage for larger ones
@@ -36,6 +38,6 @@ router.get('/:id', authenticateToken, leadController.getLeadById);
 
 // POST /api/saved-leads
 router.post('/saved-leads', authenticateToken, saveFilteredLeadsController);
-
+router.post("/sendTestSMS/:id",authenticateToken, sendTestSMS);
 
 module.exports = router;

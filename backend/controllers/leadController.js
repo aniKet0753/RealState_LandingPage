@@ -1,15 +1,23 @@
 const { Readable } = require("stream");
+const cron = require("node-cron");
 const csv = require("csv-parser");
 const supabase = require("../db/supabaseClient");
 const { addLeadSchema } = require("../schemas/leadSchema");
 const { sendMail, scheduleLeadEmails } = require("../mailers/mailer");
-const { sendSellerMail, scheduleSellerLeadEmails } = require("../mailers/mailer2");
-const { initiateBuyerWorkflow, initiateSellerWorkflow } = require("../mailers/flowdeskMailer")
-const { scheduleLeadTexts } = require("../textmailers/buyerSendText"); // adjust path
-const { scheduleSellerTexts  } = require("../textmailers/SellerSendText2")
+const {
+  sendSellerMail,
+  scheduleSellerLeadEmails,
+} = require("../mailers/mailer2");
+// const { initiateBuyerWorkflow, initiateSellerWorkflow } = require("../mailers/flowdeskMailer")
+const { scheduleBuyerTexts } = require("../textmailers/buyerSendText");
+const { scheduleSellerTexts } = require("../textmailers/SellerSendText2");
+const { sendSMS } = require("../textmailers/SellerSendText2"); // adjust path if needed
+
 // const {triggerRetailAIAgent  } = require("./triggerAIAgentCall")
 // triggerRetailAIAgent({ phone: "9122503536", name: "Rahul Sharma" });
-
+// const { triggerRetailAIWebhook } = require("../routes/retailAIWebhook");
+// const { triggerRetailAIAgent } = require("../controllers/triggerAIAgentCall");
+const { processPendingSMS } = require("../textmailers/SellerSendText2");
 
 // Define required headers for the CSV file
 const REQUIRED_HEADERS = [
@@ -71,7 +79,7 @@ exports.bulkUploadLeads = async (req, res) => {
       hasHeaders = true;
     })
     .on("data", (data) => {
-      if (validationErrors.length > 0) return; // Skip data processing if headers are missing
+      if (validationErrors.length) return; // Skip data processing if headers are missing
 
       const leadData = {
         user_id: req.user.userId,
@@ -90,27 +98,23 @@ exports.bulkUploadLeads = async (req, res) => {
         bathrooms: parseInteger(data.bathrooms),
         timeline: data.timeline,
         social_media: data.social_media ? JSON.parse(data.social_media) : [],
+        sms_stage: 0,
+        next_sms_date: null,
       };
-
-      // Create a temporary object for Joi validation without the user_id
-      const validationData = { ...leadData };
-      delete validationData.user_id;
-
-      // Validate each row against the Joi schema
-      const { error } = addLeadSchema.validate(validationData, {
-        abortEarly: false,
-      });
-
+      const { error } = addLeadSchema.validate(
+        { ...leadData, user_id: undefined },
+        { abortEarly: false }
+      );
       if (error) {
-        error.details.forEach((detail) => {
-          validationErrors.push(`Row ${leads.length + 2}: ${detail.message}`);
-        });
+        error.details.forEach((d) =>
+          validationErrors.push(`Row ${leads.length + 2}: ${d.message}`)
+        );
       } else {
         leads.push(leadData);
       }
     })
     .on("end", async () => {
-      if (validationErrors.length > 0) {
+      if (validationErrors.length) {
         return res.status(400).json({ error: validationErrors.join("; ") });
       }
 
@@ -120,7 +124,7 @@ exports.bulkUploadLeads = async (req, res) => {
           .json({ error: "CSV file is empty or missing headers." });
       }
 
-      if (leads.length === 0) {
+      if (!leads.length) {
         return res
           .status(400)
           .json({ message: "No valid leads found in the spreadsheet." });
@@ -142,14 +146,43 @@ exports.bulkUploadLeads = async (req, res) => {
           leads: data,
         });
       } catch (dbError) {
-  if (dbError.code === "23505") {
-    return res.status(409).json({ message: "Email already exists" });
-  }
-  res.status(500).json({ error: dbError.message });
-}
+        if (dbError.code === "23505") {
+          return res.status(409).json({ message: "Email already exists" });
+        }
+        res.status(500).json({ error: dbError.message });
+      }
     });
 };
 
+exports.sendTestSMS = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ error: "Lead ID is required" });
+
+    // Get lead by ID
+    const { data: lead, error } = await supabase
+      .from("leads")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error || !lead) {
+      return res.status(404).json({ error: "Lead not found" });
+    }
+    const nextStage = lead.sms_stage + 1;
+    res.json({
+      message: `Next stage for ${lead.first_name} is ${nextStage}`,
+      sms_stage: lead.sms_stage,
+      next_stage: nextStage,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+cron.schedule("* * * * *", async () => {
+  console.log("⏰ Running SMS scheduler...");
+  await processPendingSMS();
+});
 // Add a new lead
 exports.addLead = async (req, res) => {
   const {
@@ -174,6 +207,10 @@ exports.addLead = async (req, res) => {
   console.log(req.body);
 
   try {
+    const phoneNumber = phone_number.startsWith("+91")
+      ? phone_number
+      : `+91${phone_number}`;
+
     const { data, error } = await supabase
       .from("leads")
       .insert([
@@ -182,7 +219,7 @@ exports.addLead = async (req, res) => {
           first_name,
           last_name,
           email,
-          phone_number,
+          phone_number: phoneNumber,
           status,
           source,
           type,
@@ -194,6 +231,8 @@ exports.addLead = async (req, res) => {
           bathrooms,
           timeline,
           social_media,
+          sms_stage: 0,
+          next_sms_date: null,
         },
       ])
       .select();
@@ -202,58 +241,70 @@ exports.addLead = async (req, res) => {
       throw error;
     }
 
-    const newLead = data[0]; 
+    const newLead = data[0];
     const fullName = `${first_name} ${last_name}`;
     const city = preferred_location || "your city";
 
-if (newLead.type?.toLowerCase() === "seller") {
-  scheduleSellerTexts(fullName, phone_number, city);
+    if (newLead.type?.toLowerCase() === "seller") {
+      await scheduleSellerTexts(newLead); // schedules all stages in DB
+
+      // scheduleSellerTexts(fullName, phone_number, city);
+      // await triggerRetailAIAgent({ phone: phone_number, name: fullName });
+      // await triggerRetailAIAgent({ phone: phone_number, name: fullName });
+
       //   try {
       //   await triggerRetailAIAgent({ phone: phone_number, name: fullName });
       //   console.log(" Retail AI call triggered successfully");
       // } catch (err) {
       //   console.error(" Error triggering Retail AI call:", err);
       // }
-    
-} else {
-  scheduleLeadTexts(fullName, phone_number, city);
-}
-
-
+    } else {
+      await scheduleBuyerTexts(
+        newLead,
+        newLead.preferred_location || "your city"
+      );
+      // await triggerRetailAIAgent({ phone: phone_number, name: fullName });
+    }
 
     if (sendEmail) {
       if (newLead.type?.toLowerCase() === "seller") {
-        await initiateSellerWorkflow(newLead.email, newLead.first_name, newLead.last_name);
-  } else {
-        await initiateBuyerWorkflow(newLead.email, newLead.first_name, newLead.last_name);
+        // await initiateSellerWorkflow(newLead.email, newLead.first_name, newLead.last_name);
+      } else {
+        // await initiateBuyerWorkflow(newLead.email, newLead.first_name, newLead.last_name);
       }
-//       if (newLead.type?.toLowerCase() === "seller") {
-//         await sendSellerMail(
-//           fullName,
-//           "Welcome to Our Seller Program",
-//           `It was great connecting with you, ${fullName}. 
-// We’ll guide you through the process of selling your property in ${city} and make sure you get the best possible outcome. 
-// Talk soon!`,
-//           email,
-//           "stage 1"
-//         );
-//         //first email for buyer
-//         scheduleSellerLeadEmails(newLead);
-//       } else {
-//         await sendMail(
-//           fullName,
-//           "Welcome To Real Estate",
-//           `It was great to meet you, ${fullName}.  
-// We’ll help you find the best property in ${city}.   
-// Talk soon!  
-// Michael K`,
-//           email,
-//           "Stage 1"
-//         );
-//         scheduleLeadEmails(fullName, email, city);
-//       }
+      //       if (newLead.type?.toLowerCase() === "seller") {
+      //         await sendSellerMail(
+      //           fullName,
+      //           "Welcome to Our Seller Program",
+      //           `It was great connecting with you, ${fullName}.
+      // We’ll guide you through the process of selling your property in ${city} and make sure you get the best possible outcome.
+      // Talk soon!`,
+      //           email,
+      //           "stage 1"
+      //         );
+      //         //first email for buyer
+      //         scheduleSellerLeadEmails(newLead);
+      //       } else {
+      //         await sendMail(
+      //           fullName,
+      //           "Welcome To Real Estate",
+      //           `It was great to meet you, ${fullName}.
+      // We’ll help you find the best property in ${city}.
+      // Talk soon!
+      // Michael K`,
+      //           email,
+      //           "Stage 1"
+      //         );
+      //         scheduleLeadEmails(fullName, email, city);
+      //       }
+      // await triggerRetailAIWebhook({
+      //   name: `${first_name} ${last_name}`,
+      //   phone: phone_number,
+      //   email,
+      //   city: preferred_location || "your city"
+      // });
     }
-      res
+    res
       .status(201)
       .json({ message: "Lead added successfully.", lead: data[0] });
   } catch (error) {
@@ -262,43 +313,8 @@ if (newLead.type?.toLowerCase() === "seller") {
 };
 
 // Get all leads
-exports.getAllLeads = async (req, res) => {
-  try {
-    const { data, error } = await supabase.from("leads").select("*");
-
-    if (error) {
-      throw error;
-    }
-
-    res.status(200).json({ leads: data });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
 
 // Get a single lead by ID
-exports.getLeadById = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const { data, error } = await supabase
-      .from("leads")
-      .select("*")
-      .eq("id", id)
-      .single();
-
-    if (error) {
-      throw error;
-    }
-
-    if (!data) {
-      return res.status(404).json({ message: "Lead not found." });
-    }
-
-    res.status(200).json({ lead: data });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
 
 // Get all leads with pagination, filtering, and search
 exports.getAllLeads = async (req, res) => {
@@ -339,7 +355,7 @@ exports.getAllLeads = async (req, res) => {
     res.status(200).json({
       leads: data,
       totalLeads: count,
-      currentPage: parsedPage,
+      currentPage: parseInt(page),
       totalPages: Math.ceil(count / parsedLimit),
     });
   } catch (error) {
