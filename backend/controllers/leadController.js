@@ -179,10 +179,6 @@ exports.sendTestSMS = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-cron.schedule("* * * * *", async () => {
-  console.log("⏰ Running SMS scheduler...");
-  await processPendingSMS();
-});
 // Add a new lead
 exports.addLead = async (req, res) => {
   const {
