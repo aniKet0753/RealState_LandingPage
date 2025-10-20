@@ -35,7 +35,7 @@ export default function PremiumPDFUpload({ onUploadComplete }) {
       const formData = new FormData();
       formData.append('pdf', file);
 
-      const response = await fetch('http://localhost:5001/api/landing-pages/extract-pdf', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/landing-pages/extract-pdf`, {
         method: 'POST',
         body: formData,
       });

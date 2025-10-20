@@ -249,7 +249,7 @@ CRITICAL RULES:
         headers: {
           Authorization: `Bearer ${OPENAI_API_KEY}`,
           "Content-Type": "application/json",
-          "HTTP-Referer": "http://localhost:5001",
+          "HTTP-Referer": process.env.FRONTEND_URL || "http://localhost:5174",
           "X-Title": "Landing Page PDF Parser"
         },
       }
@@ -375,7 +375,9 @@ router.post("/save-full", async (req, res) => {
     if (error) throw error;
 
     // Generate public URL
-    const publicUrl = `http://localhost:5174/landing/${data.share_id}`;
+  const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5174";
+const publicUrl = `${FRONTEND_URL}/landing/${data.share_id}`;
+
 
     res.status(201).json({
       message: "Landing page saved successfully!",
